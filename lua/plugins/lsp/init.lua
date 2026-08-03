@@ -66,6 +66,16 @@ for _, server in ipairs(servers) do
     pcall(require, "plugins.lsp.servers." .. server)
 end
 
+-- Desactivar LSP y diagnósticos en buffers especiales (Undotree, Diffs, Noice, etc.)
+local lsp_ignore_group = vim.api.nvim_create_augroup("LspIgnoreSpecialBuffers", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+    group = lsp_ignore_group,
+    pattern = { "undotree", "diff", "qf", "noice" },
+    callback = function(ev)
+        vim.diagnostic.enable(false, { bufnr = ev.buf })
+    end,
+})
+
 -- 6. Autocmd para detección automática al renombrar / guardar
 local lsp_trigger_group = vim.api.nvim_create_augroup("LspTriggerOnRename", { clear = true })
 
@@ -74,10 +84,9 @@ vim.api.nvim_create_autocmd({ "BufFilePost", "BufWritePost" }, {
     callback = function(ev)
         local buf = ev.buf
         local bufname = vim.api.nvim_buf_get_name(buf)
-        if bufname == "" then
+        if bufname == "" or not vim.bo[buf].modifiable then
             return
         end
-
         local detected_ft = vim.filetype.match({ filename = bufname })
         if detected_ft and detected_ft ~= vim.bo[buf].filetype then
             vim.bo[buf].filetype = detected_ft
@@ -86,7 +95,7 @@ vim.api.nvim_create_autocmd({ "BufFilePost", "BufWritePost" }, {
         vim.api.nvim_exec_autocmds("FileType", { buffer = buf, modeline = false })
 
         vim.schedule(function()
-            if not vim.api.nvim_buf_is_valid(buf) then
+            if not vim.api.nvim_buf_is_valid(buf) or not vim.bo[buf].modifiable then
                 return
             end
             local clients = vim.lsp.get_clients({ bufnr = buf })
