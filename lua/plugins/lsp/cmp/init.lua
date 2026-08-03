@@ -7,6 +7,10 @@ pcall(require, "plugins.lsp.cmp.luasnip")
 
 -- Cacheamos LuaSnip arriba una sola vez para rendimiento máximo
 local ok_luasnip, luasnip = pcall(require, "luasnip")
+local ok_html_ids, html_ids = pcall(require, "plugins.lsp.cmp.html_ids")
+if ok_html_ids then
+    html_ids.setup()
+end
 
 cmp.setup({
     performance = {
@@ -84,6 +88,7 @@ cmp.setup({
                 path = "󰉋 Path",
                 buffer = "󰦨 Buf",
                 luasnip = "󰩫 Snip",
+                html_ids = "󰩨 HTML-ID",
             }
 
             vim_item.menu = menus[entry.source.name] or entry.source.name
@@ -106,6 +111,7 @@ cmp.setup({
         { name = "nvim_lsp", priority = 1000 },
         { name = "luasnip", priority = 750 },
         { name = "path", priority = 500 },
+        { name = "html_ids", priority = 600 },
     }, {
         {
             name = "buffer",
