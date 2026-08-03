@@ -171,5 +171,140 @@ end
 -- Command :Debug
 vim.api.nvim_create_user_command("Debug", generate_debug_report, {})
 
--- Keymap <leader>db
-vim.keymap.set("n", "<leader>db", generate_debug_report, { desc = "Generate Complete System Debug Report" })
+-- ============================================================================
+-- SYSTEM PERFORMANCE & BUFFER RESOURCE PROFILING REPORT
+-- ============================================================================
+
+local function generate_performance_report()
+    local log_file = vim.fn.getcwd() .. "/nvim_performance.log"
+    local lines = {}
+
+    table.insert(lines, "======================================================================")
+    table.insert(lines, "PERFORMANCE & BUFFER RESOURCE REPORT")
+    table.insert(lines, "TIMESTAMP: " .. os.date("%Y-%m-%d %H:%M:%S"))
+    table.insert(lines, "======================================================================\n")
+
+    -- 1. LUA MEMORY & GARBAGE COLLECTOR
+    table.insert(lines, "--- [ LUA MEMORY & GARBAGE COLLECTOR ] ---")
+    local mem_kb = collectgarbage("count")
+    local mem_mb = mem_kb / 1024
+    table.insert(lines, string.format("Lua Memory Allocated : %.2f MB (%.0f KB)", mem_mb, mem_kb))
+
+    local start_time = os.clock()
+    collectgarbage("collect")
+    local gc_time_ms = (os.clock() - start_time) * 1000
+    local post_mem_mb = collectgarbage("count") / 1024
+    table.insert(lines, string.format("Memory After Forced GC: %.2f MB", post_mem_mb))
+    table.insert(lines, string.format("Garbage Collection Time: %.2f ms", gc_time_ms))
+
+    -- 2. BENCHMARK EXECUTION TEST
+    table.insert(lines, "\n--- [ LUA BENCHMARK SPEED TEST ] ---")
+    local bench_start = os.clock()
+    for _ = 1, 1000000 do
+        local _ = 1 + 1
+    end
+    local bench_time_ms = (os.clock() - bench_start) * 1000
+    table.insert(lines, string.format("1 Million Loop Exec Time: %.2f ms", bench_time_ms))
+
+    -- 3. STARTUP & RUNTIME TIMINGS
+    table.insert(lines, "\n--- [ STARTUP & RUNTIME TIMINGS ] ---")
+    local uptime_sec = vim.fn.has("reltime") == 1 and vim.fn.reltimestr(vim.fn.reltime()) or "N/A"
+    table.insert(lines, "Editor Uptime          : " .. uptime_sec:gsub("^%s*", "") .. " seconds")
+
+    -- 4. ACTIVE RESOURCES SUMMARY
+    table.insert(lines, "\n--- [ ACTIVE RESOURCES SUMMARY ] ---")
+    local all_bufs = vim.api.nvim_list_bufs()
+    local loaded_bufs = 0
+    for _, b in ipairs(all_bufs) do
+        if vim.api.nvim_buf_is_loaded(b) then
+            loaded_bufs = loaded_bufs + 1
+        end
+    end
+    table.insert(lines, string.format("Total Buffers Allocated: %d (Loaded: %d)", #all_bufs, loaded_bufs))
+    table.insert(lines, "Active LSP Clients     : " .. #vim.lsp.get_clients())
+    table.insert(lines, "Active Windows         : " .. #vim.api.nvim_list_wins())
+
+    -- 5. DETAILED BUFFER LIST & CREATOR BREAKDOWN (IDENTIFY WASTED RESOURCES)
+    table.insert(lines, "\n--- [ DETAILED BUFFER RESOURCE BREAKDOWN ] ---")
+    local path_counts = {}
+
+    for _, buf in ipairs(all_bufs) do
+        local is_loaded = vim.api.nvim_buf_is_loaded(buf)
+        local full_path = vim.api.nvim_buf_get_name(buf)
+        local ft = vim.bo[buf].filetype ~= "" and vim.bo[buf].filetype or "<NONE>"
+        local bt = vim.bo[buf].buftype ~= "" and vim.bo[buf].buftype or "normal"
+
+        -- Identificar creador / tipo de buffer
+        local creator = "User File"
+        if bt ~= "normal" then
+            if ft == "undotree" or full_path:match("undotree") then
+                creator = "Plugin: Undotree"
+            elseif ft == "cmp_menu" or ft == "cmp_docs" then
+                creator = "Plugin: cmp (Autocompletado)"
+            elseif ft == "noice" or full_path:match("noice") then
+                creator = "Plugin: Noice"
+            elseif bt == "quickfix" then
+                creator = "Native: Quickfix"
+            else
+                creator = "Special Buffer (" .. bt .. ")"
+            end
+        elseif full_path == "" then
+            creator = "Native: Scratch Buffer (Unnamed)"
+        end
+
+        local display_path = (full_path == "") and "<UNNAMED SCRATCH>" or full_path
+
+        -- Contador de duplicados
+        if full_path ~= "" then
+            path_counts[full_path] = (path_counts[full_path] or 0) + 1
+        end
+
+        local status_str = is_loaded and "LOADED" or "UNLOADED"
+        table.insert(
+            lines,
+            string.format(
+                "  * Buf #%-3d | %-8s | FT: %-12s | Creator: %-22s\n    Path: %s",
+                buf,
+                status_str,
+                ft,
+                creator,
+                display_path
+            )
+        )
+    end
+
+    -- 6. DUPLICATE BUFFERS DETECTION
+    table.insert(lines, "\n--- [ DUPLICATE BUFFERS DETECTED ] ---")
+    local duplicates_found = false
+    for path, count in pairs(path_counts) do
+        if count > 1 then
+            duplicates_found = true
+            table.insert(lines, string.format("  ⚠️ DUPLICATE (%d instances): %s", count, path))
+        end
+    end
+    if not duplicates_found then
+        table.insert(lines, "No duplicate file buffers found in this session.")
+    end
+
+    table.insert(lines, "\n======================================================================")
+    table.insert(lines, "END OF PERFORMANCE REPORT")
+    table.insert(lines, "======================================================================")
+
+    -- ESCRIBIR AL ARCHIVO
+    local file, err = io.open(log_file, "w")
+    if file then
+        file:write(table.concat(lines, "\n"))
+        file:close()
+
+        print("PERFORMANCE REPORT GENERATED AT: " .. log_file)
+        vim.notify("PERFORMANCE REPORT GENERATED AT: " .. log_file, vim.log.levels.INFO)
+
+        vim.cmd("split " .. vim.fn.fnameescape(log_file))
+    else
+        print("ERROR WRITING LOG: " .. tostring(err))
+        vim.notify("FATAL ERROR: COULD NOT WRITE PERFORMANCE LOG: " .. tostring(err), vim.log.levels.ERROR)
+    end
+end
+
+-- Registrar comando :Profile
+vim.api.nvim_create_user_command("Profile", generate_performance_report, {})
