@@ -58,7 +58,14 @@ opt.clipboard = "unnamedplus" -- Sincroniza el registro de Neovim con el clipboa
 opt.swapfile = false -- Desactiva swapfiles.
 opt.backup = false -- No genera archivos backup.
 opt.undofile = true -- Guarda historial persistente de undo.
-opt.undodir = vim.fn.stdpath("data") .. "/undodir" -- Carpeta donde guardar undo persistente.
+
+-- Crear carpeta undodir automáticamente si no existe para evitar errores ENOENT
+local undodir = vim.fn.stdpath("data") .. "/undodir"
+if vim.fn.isdirectory(undodir) == 0 then
+    vim.fn.mkdir(undodir, "p")
+end
+opt.undodir = undodir
+
 opt.updatetime = 50 -- Reduce el tiempo de actualización para diagnósticos y eventos.
 
 -- === COMPLETADO / MENSAJES ===
@@ -73,13 +80,6 @@ opt.foldlevel = 99 -- Deja todos los niveles de plegado abiertos por defecto.
 opt.foldcolumn = "0" -- No muestra columna extra para folds.
 opt.foldtext = "" -- Usa la línea original como texto del fold.
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "Resalta el texto copiado",
-    callback = function()
-        vim.highlight.on_yank({ higroup = "IncSearch", timeout = 120 })
-    end,
-})
-
 -- =========================================================
 -- CARGA DEL TEMA PERSONALIZADO (Criterio de arquitectura limpia)
 -- =========================================================
@@ -89,20 +89,3 @@ if status then
 else
     vim.notify("Error: No se pudo cargar el theme.lua", vim.log.levels.ERROR)
 end
-
--- =========================================================
--- RESTAURAR ÚLTIMA POSICIÓN DEL CURSOR AL INICIAR
--- =========================================================
-vim.api.nvim_create_autocmd("BufReadPost", {
-    callback = function()
-        local mark = vim.api.nvim_buf_get_mark(0, '"')
-        local lcount = vim.api.nvim_buf_line_count(0)
-        if mark[1] > 0 and mark[1] <= lcount then
-            pcall(vim.api.nvim_win_set_cursor, 0, mark)
-        end
-    end,
-})
-
-vim.keymap.set("n", "<leader>I", function()
-    vim.cmd("Inspect")
-end, { desc = "Inspect nativo" })
