@@ -32,7 +32,8 @@ function M.setup()
 
         local items = {}
         local seen = {}
-        local html_files = vim.fn.globpath(vim.fn.getcwd(), "**/*.html", false, true)
+        local cwd = vim.fn.getcwd()
+        local html_files = vim.fn.globpath(cwd, "**/*.html", false, true)
 
         for _, filepath in ipairs(html_files) do
             if not filepath:find("node_modules") and not filepath:find("dist") and not filepath:find("build") then
@@ -41,13 +42,31 @@ function M.setup()
                     local content = file:read("*a")
                     file:close()
 
-                    for id in content:gmatch("id=[\"']([^\"']+)[\"']") do
+                    for tag, full_tag, id in content:gmatch("<([%w%-]+)([^>]*%sid=[\"']([^\"']+)[\"'][^>]*)>") do
                         if not seen[id] then
                             seen[id] = true
+                            local rel_path = vim.fn.fnamemodify(filepath, ":.")
+
+                            -- Construcción de la documentación estilizada sin símbolos raros
+                            local doc_text = table.concat({
+                                "HTML ID: #" .. id,
+                                "",
+                                "Tag:  <" .. tag .. ">",
+                                "File: " .. rel_path,
+                                "",
+                                "```html",
+                                "<" .. tag .. full_tag .. ">",
+                                "```",
+                            }, "\n")
+
                             table.insert(items, {
                                 label = id,
                                 kind = cmp.lsp.CompletionItemKind.Value,
-                                detail = "HTML ID (" .. vim.fs.basename(filepath) .. ")",
+                                detail = "<" .. tag .. ">",
+                                documentation = {
+                                    kind = cmp.lsp.MarkupKind.Markdown,
+                                    value = doc_text,
+                                },
                                 insertText = id,
                             })
                         end
@@ -58,7 +77,6 @@ function M.setup()
 
         callback({ items = items, isIncomplete = false })
     end
-
     -- Registra la fuente en cmp
     cmp.register_source("html_ids", html_ids_source:new())
 end
