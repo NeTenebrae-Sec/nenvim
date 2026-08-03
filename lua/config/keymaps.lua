@@ -225,11 +225,24 @@ end, "Flash: Treesitter (Select)")
 nmap("<leader>X", "<cmd>!chmod +x %<CR>", "Make File Executable")
 
 nmap("<leader>re", function()
-    if vim.bo.modified then
-        vim.notify("Buffer has unsaved changes. Write or discard first.", vim.log.levels.WARN)
+    -- 1. Verifica si ALGÚN buffer tiene cambios sin guardar
+    local has_modified = false
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].modified then
+            has_modified = true
+            break
+        end
+    end
+
+    if has_modified then
+        vim.notify("There are unsaved changes in your workspace. Save or discard first.", vim.log.levels.WARN)
         return
     end
-    vim.cmd("restart")
+
+    -- 2. 'restart!' (con bang) evita que el evento de Noice interrumpa la salida
+    pcall(function()
+        vim.cmd("restart!")
+    end)
 end, "Restart Config")
 
 nmap("<leader>z", "za", "Fold: Toggle under cursor")
