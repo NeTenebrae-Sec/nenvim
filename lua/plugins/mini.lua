@@ -1,47 +1,43 @@
 -- =========================================================
 -- lua/plugins/mini.lua
--- Configuración unificada, limpia y modular de mini.nvim
 -- =========================================================
 
--- Tabla de configuración de todos tus módulos de mini.nvim
 local modules = {
-	-- Módulos con configuración por defecto (se cargan con {})
-surround = {
+    surround = {
         mappings = {
-            add            = 'Sa', -- Añadir envoltura (Normal y Visual)
-            delete         = 'Sd', -- Borrar envoltura
-            replace        = 'Sr', -- Reemplazar envoltura
-            find           = 'Sf', -- Buscar adelante
-            find_left      = 'SF', -- Buscar atrás
-            highlight      = 'Sh', -- Resaltar
-            update_n_lines = 'Sn', -- Cambiar líneas evaluadas
+            add = "Sa",
+            delete = "Sd",
+            replace = "Sr",
+            find = "Sf",
+            find_left = "SF",
+            highlight = "Sh",
+            update_n_lines = "Sn",
         },
     },
-	ai = {},
-	comment = {},
-	pairs = {},
-	splitjoin = {},
-	bufremove = {},
-	align = {},
+    ai = {},
+    comment = {},
+    pairs = {},
+    splitjoin = {},
+    bufremove = {},
+    align = {},
 
-	move = {
-		options = {
-			reindent_linewise = true,
-		},
-	},
+    move = {
+        options = {
+            reindent_linewise = true,
+        },
+    },
 
-	input = {
-		window = {
-			config = { border = "rounded" },
-		},
-	},
+    input = {
+        window = {
+            config = { border = "rounded" },
+        },
+    },
 }
 
--- Bucle dinámico para cargar y configurar cada módulo de forma segura
 for name, config in pairs(modules) do
-	local ok, module = pcall(require, "mini." .. name)
-	if ok then
-		local opts = type(config) == "function" and config() or config
-		module.setup(opts)
-	end
+    local ok, module = pcall(require, "mini." .. name)
+    if ok then
+        local opts = type(config) == "function" and config() or config
+        module.setup(opts)
+    end
 end
