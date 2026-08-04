@@ -2,13 +2,13 @@
 -- NÚCLEO LSP GLOBAL
 -- ============================================================================
 
--- 1. PATH de Mason en el entorno Neovim
+-- PATH de Mason en el entorno Neovim
 vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 
--- 2. Cargar gestión de binarios (Mason)
+-- Cargar gestión de binarios (Mason)
 pcall(require, "plugins.lsp.mason")
 
--- 3. Capabilities Globales
+-- Capabilities Globales
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 
 local ok_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
@@ -22,13 +22,13 @@ if capabilities.workspace then
     capabilities.workspace.didChangeWatchedFiles = nil
 end
 
--- Aplicar defaults para CUALQUIER servidor en Nvim 0.12+
+-- Aplicar defaults para cualquier servidor en Nvim 0.12+
 vim.lsp.config("*", {
     capabilities = capabilities,
     root_markers = { ".git" },
 })
 
--- 4. Configuración Global de Diagnósticos
+-- Configuración Global de Diagnósticos
 vim.diagnostic.config({
     virtual_text = { spacing = 2, prefix = "●" },
     underline = true,
@@ -51,7 +51,7 @@ vim.diagnostic.config({
     },
 })
 
--- 5. Cargar Servidores Modularizados
+-- Cargar Servidores Modularizados
 local servers = {
     "web",
     "html",
@@ -66,7 +66,7 @@ for _, server in ipairs(servers) do
     pcall(require, "plugins.lsp.servers." .. server)
 end
 
--- Desactivar LSP y diagnósticos en buffers especiales (Undotree, Diffs, Noice, etc.)
+-- Desactivar LSP y diagnósticos en buffers especiales
 local lsp_ignore_group = vim.api.nvim_create_augroup("LspIgnoreSpecialBuffers", { clear = true })
 vim.api.nvim_create_autocmd("FileType", {
     group = lsp_ignore_group,
@@ -76,10 +76,9 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
--- 6. Autocmd para detección automática al renombrar / guardar
 local lsp_trigger_group = vim.api.nvim_create_augroup("LspTriggerOnRename", { clear = true })
 
-vim.api.nvim_create_autocmd({ "BufFilePost", "BufWritePost" }, {
+vim.api.nvim_create_autocmd("BufFilePost", {
     group = lsp_trigger_group,
     callback = function(ev)
         local buf = ev.buf
@@ -87,21 +86,10 @@ vim.api.nvim_create_autocmd({ "BufFilePost", "BufWritePost" }, {
         if bufname == "" or not vim.bo[buf].modifiable then
             return
         end
+
         local detected_ft = vim.filetype.match({ filename = bufname })
         if detected_ft and detected_ft ~= vim.bo[buf].filetype then
             vim.bo[buf].filetype = detected_ft
         end
-
-        vim.api.nvim_exec_autocmds("FileType", { buffer = buf, modeline = false })
-
-        vim.schedule(function()
-            if not vim.api.nvim_buf_is_valid(buf) or not vim.bo[buf].modifiable then
-                return
-            end
-            local clients = vim.lsp.get_clients({ bufnr = buf })
-            for _, client in ipairs(clients) do
-                vim.lsp.buf_attach_client(buf, client.id)
-            end
-        end)
     end,
 })
