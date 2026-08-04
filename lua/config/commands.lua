@@ -9,7 +9,7 @@
 vim.api.nvim_create_autocmd("TextYankPost", {
     desc = "Resalta el texto copiado",
     callback = function()
-        vim.highlight.on_yank({ higroup = "IncSearch", timeout = 120 })
+        vim.hl.on_yank({ higroup = "IncSearch", timeout = 120 })
     end,
 })
 
