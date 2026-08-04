@@ -62,7 +62,7 @@ opt.undofile = true -- Guarda historial persistente de undo.
 -- Crear carpeta undodir automáticamente si no existe para evitar errores ENOENT
 local undodir = vim.fn.stdpath("data") .. "/undodir"
 if vim.fn.isdirectory(undodir) == 0 then
-    vim.fn.mkdir(undodir, "p")
+  vim.fn.mkdir(undodir, "p")
 end
 opt.undodir = undodir
 
@@ -85,7 +85,7 @@ opt.foldtext = "" -- Usa la línea original como texto del fold.
 -- =========================================================
 local status, theme = pcall(require, "themes.dark_cyan")
 if status then
-    theme.setup()
+  theme.setup()
 else
-    vim.notify("Error: No se pudo cargar el theme.lua", vim.log.levels.ERROR)
+  vim.notify("Error: No se pudo cargar el theme.lua", vim.log.levels.ERROR)
 end

@@ -4,11 +4,11 @@
 -- =========================================================
 
 return {
-    formatters_by_ft = {
-        python = { "isort", "black" },
-        toml = { "taplo" },
-        c = { "clang-format" },
-        cpp = { "clang-format" },
-        java = { "google-java-format" },
-    },
+  formatters_by_ft = {
+    python = { "isort", "black" },
+    toml = { "taplo" },
+    c = { "clang-format" },
+    cpp = { "clang-format" },
+    java = { "google-java-format" },
+  },
 }
