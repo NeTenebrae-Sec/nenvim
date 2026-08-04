@@ -96,3 +96,93 @@ end, {
         return keys
     end,
 })
+
+-- ============================================================================
+-- 7. REGISTRO DEL COMANDO DE USUARIO (:FormatProject)
+-- PROPÓSITO: Formatea todos los archivos del proyecto basándose en el filetype.
+-- ============================================================================
+vim.api.nvim_create_user_command("FormatProject", function(opts)
+    local ft = (opts.args ~= "") and opts.args or vim.bo.filetype
+    local root = vim.fs.root(0, { "package.json", ".git", "Makefile", ".stylua.toml" }) or vim.fn.getcwd()
+
+    -- 1. PROYECTO LUA (StyLua)
+    if ft == "lua" then
+        vim.notify("[FormatProject] Formateando proyecto Lua con StyLua...", vim.log.levels.INFO)
+        vim.system({ "stylua", "--indent-type", "Spaces", "--indent-width", "4", "." }, { cwd = root }, function(out)
+            vim.schedule(function()
+                if out.code == 0 then
+                    vim.notify("[FormatProject] ✨ ¡Proyecto Lua formateado con éxito!", vim.log.levels.INFO)
+                    vim.cmd("checktime")
+                else
+                    vim.notify(
+                        "[FormatProject] ❌ Error al formatear Lua: " .. (out.stderr or ""),
+                        vim.log.levels.ERROR
+                    )
+                end
+            end)
+        end)
+        return
+    end
+
+    -- 2. PROYECTO WEB / JS / TS (Prettier)
+    local web_fts = {
+        javascript = true,
+        typescript = true,
+        javascriptreact = true,
+        typescriptreact = true,
+        vue = true,
+        svelte = true,
+        astro = true,
+        html = true,
+        css = true,
+        scss = true,
+        json = true,
+        yaml = true,
+    }
+
+    if web_fts[ft] then
+        vim.notify("[FormatProject] Formateando proyecto con Prettier...", vim.log.levels.INFO)
+
+        local prettier_bin = root .. "/node_modules/.bin/prettier"
+        if vim.fn.executable(prettier_bin) == 0 then
+            prettier_bin = "prettier"
+        end
+
+        local cmd = {
+            prettier_bin,
+            "--write",
+            "--no-editorconfig",
+            "--tab-width",
+            "4",
+            "--use-tabs",
+            "true",
+            "--semi",
+            "true",
+            "--single-quote",
+            "true",
+            "--trailing-comma",
+            "all",
+            ".",
+        }
+
+        vim.system(cmd, { cwd = root }, function(out)
+            vim.schedule(function()
+                if out.code == 0 then
+                    vim.notify("[FormatProject] ✨ ¡Proyecto Web formateado con éxito!", vim.log.levels.INFO)
+                    vim.cmd("checktime")
+                else
+                    vim.notify("[FormatProject] ❌ Error en Prettier: " .. (out.stderr or ""), vim.log.levels.ERROR)
+                end
+            end)
+        end)
+        return
+    end
+
+    vim.notify("[FormatProject] Tipo de archivo no soportado: " .. tostring(ft), vim.log.levels.WARN)
+end, {
+    desc = "Formatea todos los archivos del proyecto actual (Soporta Lua, JS, TS, HTML, CSS, JSON, etc.)",
+    nargs = "?",
+    complete = function()
+        return { "lua", "javascript", "typescript", "javascriptreact", "typescriptreact", "html", "css", "json" }
+    end,
+})
