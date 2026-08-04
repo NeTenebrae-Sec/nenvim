@@ -34,6 +34,7 @@ M.modules = {
     "plugins.live-server",
     "plugins.multi_cursor",
     "plugins.trident",
+    "plugins.perf_monitor",
 
     -- Entorno LSP / Configs de Desarrollo (En lua/plugins/lsp/)
     "plugins.lsp.lazydev",
