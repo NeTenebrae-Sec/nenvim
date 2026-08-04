@@ -34,7 +34,7 @@ function M.setup()
     local mod = formatters_by_ft[ft]
 
     if not mod then
-      vim.notify("[FormatProject] Unsupported filetype: " .. tostring(ft), vim.log.levels.WARN)
+      vim.notify("Unsupported filetype: " .. tostring(ft), vim.log.levels.WARN)
       return
     end
 
@@ -42,7 +42,7 @@ function M.setup()
 
     -- CASE 1: LUA (StyLua)
     if ft == "lua" then
-      vim.notify("[FormatProject] Formatting Lua project...", vim.log.levels.INFO)
+      vim.notify("Formatting Lua project...", vim.log.levels.INFO)
       local cmd = { "stylua" }
       for _, arg in ipairs(mod.get_cli_args(root)) do
         table.insert(cmd, arg)
@@ -52,10 +52,10 @@ function M.setup()
       vim.system(cmd, { cwd = root }, function(out)
         vim.schedule(function()
           if out.code == 0 then
-            vim.notify("[FormatProject] Lua project formatted successfully!", vim.log.levels.INFO)
+            vim.notify("Lua project formatted successfully!", vim.log.levels.INFO)
             vim.cmd("checktime")
           else
-            vim.notify("[FormatProject] StyLua error: " .. (out.stderr or ""), vim.log.levels.ERROR)
+            vim.notify("StyLua error: " .. (out.stderr or ""), vim.log.levels.ERROR)
           end
         end)
       end)
@@ -64,7 +64,7 @@ function M.setup()
 
     -- CASE 2: WEB ECOSYSTEM / PRETTIER
     if modules.javascript.formatters_by_ft[ft] then
-      vim.notify("[FormatProject] Formatting Web project with Prettier...", vim.log.levels.INFO)
+      vim.notify("Formatting Web project with Prettier...", vim.log.levels.INFO)
 
       local prettier_bin = root .. "/node_modules/.bin/prettier"
       if vim.fn.executable(prettier_bin) == 0 then
@@ -80,17 +80,17 @@ function M.setup()
       vim.system(cmd, { cwd = root }, function(out)
         vim.schedule(function()
           if out.code == 0 then
-            vim.notify("[FormatProject] Web project formatted successfully!", vim.log.levels.INFO)
+            vim.notify("Web project formatted successfully!", vim.log.levels.INFO)
             vim.cmd("checktime")
           else
-            vim.notify("[FormatProject] Prettier error: " .. (out.stderr or ""), vim.log.levels.ERROR)
+            vim.notify("Prettier error: " .. (out.stderr or ""), vim.log.levels.ERROR)
           end
         end)
       end)
       return
     end
 
-    vim.notify("[FormatProject] No project-wide CLI formatter configured for: " .. ft, vim.log.levels.WARN)
+    vim.notify("No project-wide CLI formatter configured for: " .. ft, vim.log.levels.WARN)
   end, {
     desc = "Formats all project files based on active language",
     nargs = "?",
@@ -105,7 +105,7 @@ function M.setup()
     local mod = formatters_by_ft[ft]
 
     if not mod or not mod.init_config then
-      vim.notify("[FormatInit] No config template found for filetype: " .. tostring(ft), vim.log.levels.WARN)
+      vim.notify("No config template found for filetype: " .. tostring(ft), vim.log.levels.WARN)
       return
     end
 
@@ -113,7 +113,7 @@ function M.setup()
     local target_path = root .. "/" .. mod.init_config.filename
 
     if vim.uv.fs_stat(target_path) then
-      vim.notify("[FormatInit] File " .. mod.init_config.filename .. " already exists.", vim.log.levels.WARN)
+      vim.notify("File " .. mod.init_config.filename .. " already exists.", vim.log.levels.WARN)
       return
     end
 
@@ -121,9 +121,9 @@ function M.setup()
     if file then
       file:write(mod.init_config.content)
       file:close()
-      vim.notify("[FormatInit] Created " .. mod.init_config.filename .. " in project root.", vim.log.levels.INFO)
+      vim.notify("Created " .. mod.init_config.filename .. " in project root.", vim.log.levels.INFO)
     else
-      vim.notify("[FormatInit] Error creating file: " .. tostring(err), vim.log.levels.ERROR)
+      vim.notify("Error creating file: " .. tostring(err), vim.log.levels.ERROR)
     end
   end, {
     desc = "Generates local formatter configuration file",
