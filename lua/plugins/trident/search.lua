@@ -1,5 +1,20 @@
 local M = {}
 
+-- Lista global de patrones/extensiones a ignorar en búsquedas de código
+local CODE_IGNORE_PATTERNS = {
+    "!.md",
+    "!.txt",
+    "!.log",
+    "!.json",
+    "!.yaml",
+    "!.yml",
+    "!.toml",
+    "!.lock",
+    "!.svg",
+    "!package-lock.json",
+    "!yarn.lock",
+}
+
 function M.normalize_path(path)
     if not path or path == "" then
         return ""
@@ -39,7 +54,7 @@ function M.get_mode_filter_label(mode)
     elseif mode == "exclude_ext" then
         return cur_ext ~= "" and string.format("EXCLUDE ALL: .%s", cur_ext) or "EXCLUDE EXTENSION"
     else
-        return "ALL FILES"
+        return "ALL CODE FILES"
     end
 end
 
@@ -53,6 +68,12 @@ function M.run_ripgrep(word, mode)
 
     local cmd_parts = { "rg", "--vimgrep", "-P" }
 
+    -- 1. Aplicar filtros globales para omitir archivos que no son de código
+    for _, pattern in ipairs(CODE_IGNORE_PATTERNS) do
+        table.insert(cmd_parts, string.format("-g '%s'", pattern))
+    end
+
+    -- 2. Filtros dinámicos según el modo
     if mode == "exclude_file" and current_file_rel ~= "" then
         table.insert(cmd_parts, string.format("-g '!%s'", current_file_rel))
     elseif mode == "exclude_ext" and current_ext ~= "" then
