@@ -267,6 +267,20 @@ nmap("<leader>gg", function()
   Snacks.lazygit()
 end, "Git: Lazygit")
 nmap("<leader>gb", "<cmd>Gitsigns blame_line<CR>", "Git: Blame Line")
+-- Descartar líneas/hunk con Gitsigns
+nmap("<leader>gr", function()
+  local ok, gitsigns = pcall(require, "gitsigns")
+  if ok then
+    gitsigns.reset_hunk()
+  end
+end, "Git: Reset Hunk / Line under cursor")
+
+vmap("<leader>gr", function()
+  local ok, gitsigns = pcall(require, "gitsigns")
+  if ok then
+    gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+  end
+end, "Git: Reset Selected Lines")
 
 -- =========================================================
 -- GESTIÓN Y DIVISIÓN DE VENTANAS (SPLITS)
