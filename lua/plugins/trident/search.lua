@@ -27,13 +27,18 @@ function M.get_target_word()
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2] + 1
 
+  local char_under_cursor = line:sub(col, col)
+  if not char_under_cursor:match("[%w_%-]") then
+    return nil
+  end
+
   local start_col = col
-  while start_col > 1 and line:sub(start_col - 1, start_col - 1):match("[%w_%-%.]") do
+  while start_col > 1 and line:sub(start_col - 1, start_col - 1):match("[%w_%-]") do
     start_col = start_col - 1
   end
 
   local end_col = col
-  while end_col <= #line and line:sub(end_col, end_col):match("[%w_%-%.]") do
+  while end_col <= #line and line:sub(end_col, end_col):match("[%w_%-]") do
     end_col = end_col + 1
   end
 
@@ -42,7 +47,7 @@ function M.get_target_word()
   end
 
   local raw_word = line:sub(start_col, end_col - 1)
-  return raw_word:gsub("^%.+", "")
+  return raw_word:gsub("^%-+", ""):gsub("%-+$", "")
 end
 
 function M.get_mode_filter_label(mode)
@@ -68,12 +73,10 @@ function M.run_ripgrep(word, mode)
 
   local cmd_parts = { "rg", "--vimgrep", "-P" }
 
-  -- 1. Aplicar filtros globales para omitir archivos que no son de código
   for _, pattern in ipairs(CODE_IGNORE_PATTERNS) do
     table.insert(cmd_parts, string.format("-g '%s'", pattern))
   end
 
-  -- 2. Filtros dinámicos según el modo
   if mode == "exclude_file" and current_file_rel ~= "" then
     table.insert(cmd_parts, string.format("-g '!%s'", current_file_rel))
   elseif mode == "exclude_ext" and current_ext ~= "" then
@@ -114,6 +117,28 @@ function M.run_ripgrep(word, mode)
   end
   handle:close()
   return results
+end
+
+-- En search.lua, añadir:
+
+function M.get_visual_selection()
+  -- Sale del modo visual de forma limpia para fijar los límites '< y '>
+  vim.cmd("normal! \27")
+
+  local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
+  local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
+
+  if start_line ~= end_line then
+    return nil -- Limita la extracción a selecciones dentro de una misma línea
+  end
+
+  local line = vim.api.nvim_buf_get_lines(0, start_line - 1, start_line, false)[1]
+  if not line then
+    return nil
+  end
+
+  local selection = line:sub(start_col, end_col)
+  return selection ~= "" and selection or nil
 end
 
 return M
