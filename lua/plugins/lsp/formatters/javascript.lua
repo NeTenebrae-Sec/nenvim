@@ -66,10 +66,10 @@ M.init_config = {
 }
 
 M.formatters_by_ft = {
-  javascript = { "prettier" },
-  typescript = { "prettier" },
-  javascriptreact = { "prettier" },
-  typescriptreact = { "prettier" },
+  javascript = { "injected", "prettier" },
+  typescript = { "injected", "prettier" },
+  javascriptreact = { "injected", "prettier" },
+  typescriptreact = { "injected", "prettier" },
   vue = { "prettier" },
   svelte = { "prettier" },
   astro = { "prettier" },
