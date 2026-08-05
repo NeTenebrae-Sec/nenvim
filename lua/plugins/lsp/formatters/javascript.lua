@@ -28,6 +28,9 @@ local prettier_configs = {
 -- Mapeamos el módulo local
 local M = {}
 
+M.web_patterns = {
+  "**/*.{js,mjs,cjs,ts,jsx,tsx,html,css,scss,vue,svelte,astro,json,yaml}",
+}
 --- Revisa si existe configuración local de Prettier
 ---@param target string|number Ruta de directorio o buffer
 function M.has_config(target)

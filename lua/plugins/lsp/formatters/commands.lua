@@ -62,7 +62,31 @@ function M.setup()
       return
     end
 
-    -- CASE 2: WEB ECOSYSTEM / PRETTIER
+    -- CASE 2: MARKDOWN (mdformat)
+    if ft == "markdown" or ft == "markdown.mdx" then
+      vim.notify("Formatting Markdown files with mdformat...", vim.log.levels.INFO)
+
+      local cmd = { "mdformat" }
+      -- 1. Insertamos las opciones configuradas en markdown.lua (--wrap 80, etc.)
+      for _, arg in ipairs(mod.get_cli_args(root)) do
+        table.insert(cmd, arg)
+      end
+      -- 2. Indicamos el directorio del proyecto
+      table.insert(cmd, ".")
+
+      vim.system(cmd, { cwd = root }, function(out)
+        vim.schedule(function()
+          if out.code == 0 then
+            vim.notify("Markdown files formatted successfully!", vim.log.levels.INFO)
+            vim.cmd("checktime")
+          else
+            vim.notify("mdformat error: " .. (out.stderr or ""), vim.log.levels.ERROR)
+          end
+        end)
+      end)
+      return
+    end
+    -- CASE 3: WEB ECOSYSTEM / PRETTIER (JS, TS, HTML, CSS, JSON, etc.)
     if modules.javascript.formatters_by_ft[ft] then
       vim.notify("Formatting Web project with Prettier...", vim.log.levels.INFO)
 
@@ -75,7 +99,12 @@ function M.setup()
       for _, arg in ipairs(mod.get_cli_args(root)) do
         table.insert(cmd, arg)
       end
-      table.insert(cmd, ".")
+
+      -- Obtenemos los patrones web directamente desde la configuración de javascript.lua
+      local web_patterns = modules.javascript.web_patterns or { "**/*.{js,mjs,cjs,ts,jsx,tsx,html,css,scss,json,yaml}" }
+      for _, pattern in ipairs(web_patterns) do
+        table.insert(cmd, pattern)
+      end
 
       vim.system(cmd, { cwd = root }, function(out)
         vim.schedule(function()
@@ -92,13 +121,12 @@ function M.setup()
 
     vim.notify("No project-wide CLI formatter configured for: " .. ft, vim.log.levels.WARN)
   end, {
-    desc = "Formats all project files based on active language",
+    desc = "Formats project files based on active language",
     nargs = "?",
   })
 
   -- ========================================================================
   -- COMMAND 2: :FormatInit
-  -- PURPOSE: Creates local config file (.prettierrc, .stylua.toml, etc.)
   -- ========================================================================
   vim.api.nvim_create_user_command("FormatInit", function(opts)
     local ft = (opts.args ~= "") and opts.args or vim.bo.filetype
