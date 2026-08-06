@@ -39,7 +39,7 @@ function M.setup(c, set)
 
   -- 3. VARIABLES / POO / PROPIEDADES
   set("@variable", { fg = c.white })
-  set("@variable.member", { fg = c.white })
+  set("@variable.member", { fg = c.yellow_light })
   set("@variable.parameter", { fg = c.fg3, italic = true })
 
   set("@property", { fg = c.yellow_light })
