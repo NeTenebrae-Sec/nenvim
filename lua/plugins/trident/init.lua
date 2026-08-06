@@ -1,11 +1,10 @@
 local search = require("plugins.trident.search")
 local editor = require("plugins.trident.editor")
 local menu = require("plugins.trident.menu")
-
+local renamer = require("plugins.trident.renamer")
 local M = {}
 
 function M.inspect_and_edit(mode, word_override)
-  -- Prioriza el texto seleccionado en modo visual si existe; de lo contrario usa la palabra bajo el cursor
   local word = word_override or search.get_target_word()
   if not word or word == "" then
     vim.notify("Trident: No valid word selected or under cursor", vim.log.levels.WARN)
@@ -27,6 +26,12 @@ function M.inspect_and_edit(mode, word_override)
   end
 end
 
+function M.prompt_and_search(mode)
+  search.prompt_user_input(function(input_word)
+    M.inspect_and_edit(mode or "all", input_word)
+  end)
+end
+
 function M.open_last_buffer()
   if not editor.last_selected then
     vim.notify("Trident: No previous buffer recorded", vim.log.levels.WARN)
@@ -44,37 +49,59 @@ function M.setup()
   local opts = { silent = true }
 
   -- Mapeos en Normal Mode
-  vim.keymap.set("n", "tt", function()
+  vim.keymap.set("n", "TT", function()
     M.inspect_and_edit("all")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Peek All Files" }))
 
-  vim.keymap.set("n", "tr", function()
+  vim.keymap.set("n", "TC", function()
+    M.inspect_and_edit("current_file")
+  end, vim.tbl_extend("force", opts, { desc = "Trident: Peek Current File Only" }))
+
+  vim.keymap.set("n", "TR", function()
     M.inspect_and_edit("exclude_file")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Exclude Current File" }))
 
-  vim.keymap.set("n", "te", function()
+  vim.keymap.set("n", "TE", function()
     M.inspect_and_edit("exclude_ext")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Exclude Current Extension" }))
 
-  vim.keymap.set("n", "tl", function()
+  vim.keymap.set("n", "TL", function()
     M.open_last_buffer()
   end, vim.tbl_extend("force", opts, { desc = "Trident: Open Last Buffer" }))
 
-  -- Mapeos en Visual Mode ("x")
+  vim.keymap.set("n", "T/", function()
+    M.prompt_and_search("all")
+  end, vim.tbl_extend("force", opts, { desc = "Trident: Search Prompt (All Files)" }))
+
   local function trigger_visual_search(mode)
     local selected_text = search.get_visual_selection()
     M.inspect_and_edit(mode, selected_text)
   end
 
+  -- Mapeos en Visual Mode
   vim.keymap.set("x", "tt", function()
     trigger_visual_search("all")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Peek Visual All Files" }))
+
+  vim.keymap.set("x", "tc", function()
+    trigger_visual_search("current_file")
+  end, vim.tbl_extend("force", opts, { desc = "Trident: Peek Current File Only (Visual)" }))
+
   vim.keymap.set("x", "tr", function()
     trigger_visual_search("exclude_file")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Exclude Current File (Visual)" }))
+
   vim.keymap.set("x", "te", function()
     trigger_visual_search("exclude_ext")
   end, vim.tbl_extend("force", opts, { desc = "Trident: Exclude Current Extension (Visual)" }))
+
+  vim.keymap.set("x", "t/", function()
+    M.prompt_and_search("all")
+  end, vim.tbl_extend("force", opts, { desc = "Trident: Search Prompt (Visual)" }))
+
+  vim.keymap.set("n", "T:", function()
+    renamer.rename_live_preview()
+  end, { desc = "Trident: Custom Live Rename Floating Window" })
 end
 
 -- Ejecuta la definición de keymaps al momento de cargar el módulo
