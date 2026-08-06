@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup(c, set)
-  -- 1. ESTRUCTURAS Y CONTROL
+  -- 1. ESTRUCTURAS Y CONTROL (Fucsia Neón Oscuro / Vibrante)
   set("@keyword", { fg = c.red_neon, bold = true })
   set("@keyword.conditional", { fg = c.red_neon, bold = true })
   set("@keyword.repeat", { fg = c.red_neon, bold = true })
@@ -11,6 +11,7 @@ function M.setup(c, set)
   set("@storageclass", { fg = c.red_dark })
   set("@operator", { fg = c.red_dark })
 
+  -- 1. ESTRUCTURAS Y CONTROL
   set("@keyword.exception", { fg = c.red_return, bold = true })
   set("@keyword.debug", { fg = c.warn2, bold = true })
   set("@keyword.directive", { fg = c.purple, bold = true })
@@ -18,16 +19,19 @@ function M.setup(c, set)
   set("@keyword.type", { fg = c.mint_class, bold = true })
   set("@keyword.modifier", { fg = c.red_dark, italic = true })
 
+  -- Retornos y Excepciones
   set("@keyword.return", { fg = c.red_return, bold = true })
   set("@exception", { fg = c.red_return, bold = true })
 
+  -- Imports y Exports
   set("@keyword.import", { fg = c.lime_import, bold = true })
   set("@keyword.export", { fg = c.lime_import, bold = true })
 
-  -- 2. FUNCIONES / LLAMADAS / DEFINICIONES
+  -- 2. FUNCIONES / LLAMADAS / DEFINICIONES (Rosa Pastel Claro)
   set("@function", { fg = c.pink_light, bold = true })
   set("@function.call", { fg = c.pink_light })
 
+  -- Métodos de objetos (Separados usando Itálica con el mismo Rosa Claro)
   set("@function.method", { fg = c.pink_light, italic = true })
   set("@function.method.call", { fg = c.pink_light, italic = true })
   set("@method", { fg = c.pink_light, italic = true })
@@ -35,14 +39,16 @@ function M.setup(c, set)
 
   set("@function.builtin", { fg = c.cyan_neon, bold = true })
   set("@constructor", { fg = c.mint_class, bold = true })
+
   set("@function.macro", { fg = c.pink, bold = true })
 
   -- 3. VARIABLES / POO / PROPIEDADES
-  set("@variable", { fg = c.white })
-  set("@variable.member", { fg = c.yellow_light })
+  set("@variable", { fg = c.white }) -- Variables Blancas
+
+  set("@variable.member", { fg = c.white }) -- `this.` o `self.`
   set("@variable.parameter", { fg = c.fg3, italic = true })
 
-  set("@property", { fg = c.yellow_light })
+  set("@property", { fg = c.yellow_light }) -- Propiedades
   set("@field", { fg = c.yellow_light })
 
   set("@variable.builtin", { fg = c.cyan_neon, italic = true })
@@ -50,6 +56,7 @@ function M.setup(c, set)
   set("@module.builtin", { fg = c.lime_import, italic = true })
   set("@type.qualifier", { fg = c.mint_class, italic = true })
 
+  -- Clases y Estructuras (Menta Cyan)
   set("@type", { fg = c.mint_class, bold = true })
   set("@type.definition", { fg = c.mint_class })
   set("@type.builtin", { fg = c.cyan_neon, bold = true })
@@ -60,7 +67,7 @@ function M.setup(c, set)
   set("@label", { fg = c.cyan_neon })
 
   -- 4. LITERALES DE DATOS
-  set("@string", { fg = c.cyan_soft })
+  set("@string", { fg = c.cyan_soft }) -- Strings Cyan Suave
   set("@character", { fg = c.cyan_soft })
   set("@string.special", { fg = c.cyan_neon })
   set("@string.special.path", { fg = c.lime_import })
@@ -68,12 +75,13 @@ function M.setup(c, set)
   set("@string.regex", { fg = c.pink })
   set("@string.escape", { fg = c.pink, bold = true })
 
-  set("@number", { fg = c.orange })
-  set("@boolean", { fg = c.yellow, bold = true })
+  set("@number", { fg = c.orange }) -- Números Naranja
+  set("@boolean", { fg = c.yellow, bold = true }) -- Booleanos Amarillos
   set("@constant", { fg = c.orange, bold = true })
   set("@constant.builtin", { fg = c.cyan_neon, bold = true })
   set("@constant.macro", { fg = c.pink, bold = true })
 
+  -- 4. LITERALES DE DATOS
   set("@number.float", { fg = c.orange })
   set("@string.documentation", { fg = c.cyan_soft, italic = true })
   set("@character.special", { fg = c.pink })
@@ -115,11 +123,13 @@ function M.setup(c, set)
   set("@markup.list.checked", { fg = c.cyan_neon, bold = true })
   set("@markup.list.unchecked", { fg = c.fg2 })
 
+  -- HTML / XML (Vibras de neón profundo)
   set("@constant.html", { fg = c.lime_import, bold = true })
   set("@tag", { fg = c.red_neon, bold = true })
   set("@tag.delimiter", { fg = c.bg4 })
   set("@tag.attribute", { fg = c.purple, bold = true })
 
+  -- CSS / SCSS / LESS (Perfect Sync con tu HTML)
   set("@tag.css", { fg = c.red_neon, bold = true })
   set("@type.css", { fg = c.mint_class, bold = true })
   set("@property.css", { fg = c.purple, bold = true })

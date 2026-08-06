@@ -20,19 +20,31 @@ function M.setup(c, set)
   set("CmpItemKindFile", { fg = c.fg1 })
   set("CmpItemKindFolder", { fg = c.border })
 
+  -- Noice Autocompletado (Existente)
   set("NoiceCompletionItemKindFunction", { link = "CmpItemKindFunction" })
   set("NoiceCompletionItemKindMethod", { link = "CmpItemKindMethod" })
   set("NoiceCompletionItemKindVariable", { link = "CmpItemKindVariable" })
   set("NoiceCompletionItemKindKeyword", { link = "CmpItemKindKeyword" })
   set("NoiceCompletionItemKindProperty", { link = "CmpItemKindProperty" })
 
+  -- =======================================================
+  -- NOICE POPUPS Y BÚSQUEDA (CORRECCIÓN AMARILLO)
+  -- =======================================================
+  -- Cuando presionas "/" (Búsqueda) -> Todo Cyan Eléctrico
   set("NoiceCmdlinePopupBorderSearch", { fg = c.cyan1, bg = "NONE" })
   set("NoiceCmdlinePopupTitleSearch", { fg = c.cyan1, bold = true })
+
+  -- Cuando presionas ":" (Comandos normales) -> Rosa/Rojo Neón
   set("NoiceCmdlinePopupBorder", { fg = c.red_neon, bg = "NONE" })
   set("NoiceCmdlinePopupTitle", { fg = c.red_neon, bold = true })
+
+  -- El fondo e input de la caja de texto flotante de Noice
   set("NoiceCmdline", { fg = c.fg0, bg = c.bg2 })
   set("NoiceCmdlinePrompt", { fg = c.cyan1, bold = true })
 
+  -- =======================================================
+  -- BUFFERLINE
+  -- =======================================================
   set("BufferLineBufferSelected", { fg = c.white, bg = c.bg2, bold = true })
   set("BufferLineBuffer", { fg = c.fg2, bg = c.bg1 })
   set("BufferLineBackground", { fg = c.fg2, bg = c.bg1 })
@@ -42,17 +54,25 @@ function M.setup(c, set)
   set("BufferLineModified", { fg = c.blue, bg = c.bg1 })
   set("BufferLineModifiedSelected", { fg = c.cyan1, bg = c.bg2, bold = true })
 
+  -- =======================================================
+  -- LUALINE
+  -- =======================================================
   set("lualine_a_normal", { fg = c.bg0, bg = c.cyan1, bold = true })
   set("lualine_a_insert", { fg = c.bg0, bg = c.teal, bold = true })
   set("lualine_a_visual", { fg = c.bg0, bg = c.purple, bold = true })
   set("lualine_a_replace", { fg = c.bg0, bg = c.blue, bold = true })
   set("lualine_a_command", { fg = c.bg0, bg = c.ice, bold = true })
+
   set("lualine_b_normal", { fg = c.cyan1, bg = c.bg2 })
   set("lualine_b_insert", { fg = c.teal, bg = c.bg2 })
   set("lualine_b_visual", { fg = c.purple, bg = c.bg2 })
+
   set("lualine_c_normal", { fg = c.fg1, bg = c.bg1 })
   set("lualine_c_insert", { fg = c.fg1, bg = c.bg1 })
 
+  -- =======================================================
+  -- SNACKS DASHBOARD
+  -- =======================================================
   set("SnacksDashboardHeader", { fg = c.cyan1 })
   set("SnacksDashboardTitle", { fg = c.cyan2, bold = true })
   set("SnacksDashboardIcon", { fg = c.ice })
@@ -61,11 +81,17 @@ function M.setup(c, set)
   set("SnacksDashboardFile", { fg = c.fg1 })
   set("SnacksDashboardDir", { fg = c.fg2 })
 
+  -- =======================================================
+  -- LAZY
+  -- =======================================================
   set("LazyNormal", { fg = c.fg0, bg = c.bg2 })
   set("LazyButton", { fg = c.fg1, bg = c.bg3 })
   set("LazyButtonActive", { fg = c.white, bg = c.deep, bold = true })
   set("LazyH1", { fg = c.bg0, bg = c.cyan1, bold = true })
 
+  -- =======================================================
+  -- FLASH
+  -- =======================================================
   set("FlashMatch", { fg = c.ice, bg = c.deep, bold = true })
   set("FlashCurrent", { fg = c.bg0, bg = c.cyan1, bold = true })
   set("FlashLabel", { fg = c.bg0, bg = c.pink, bold = true })

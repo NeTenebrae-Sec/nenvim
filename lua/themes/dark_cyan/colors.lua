@@ -1,43 +1,54 @@
 local M = {
-  -- FONDOS / SUPERFICIES
-  bg0 = "#05080a",
-  bg1 = "#10171c",
-  bg2 = "#172129",
-  bg3 = "#22303b",
-  bg4 = "#4c5e6c",
-  border = "#245066",
-  deep = "#103847",
+  -- =======================================================
+  -- FONDOS / SUPERFICIES (Fondo Negro Puro / Oscuro)
+  -- =======================================================
+  bg0 = "#05080a", -- Fondo principal
+  bg1 = "#10171c", -- CursorLine / pestañas inactivas
+  bg2 = "#172129", -- Ventanas flotantes / menús
+  bg3 = "#22303b", -- Selección suave / resaltados
+  bg4 = "#4c5e6c", -- Selección suave / resaltados
+  border = "#245066", -- Bordes de paneles y ventanas
+  deep = "#103847", -- Resaltado de MatchParen
 
+  -- =======================================================
   -- TEXTO BASE Y NEUTROS
-  white = "#ffffff",
-  fg0 = "#edf7fb",
-  fg1 = "#c6dbe4",
-  fg2 = "#88a1ae",
+  -- =======================================================
+  white = "#ffffff", -- Blanco brillante
+  fg0 = "#edf7fb", -- Variables (Blanco muy limpio)
+  fg1 = "#c6dbe4", -- Texto secundario discreto
+  fg2 = "#88a1ae", -- Puntuación / Comentarios (Gris azulado apagado)
   fg3 = "#c7d7df",
 
-  -- FAMILIA ROJO NEÓN / ROSA
-  red_neon = "#ff007f",
-  red_dark = "#ff66b2",
-  red_return = "#d61958",
-  pink = "#df4f89",
-  pink_light = "#ff9ebb",
-  purple = "#b15fe3",
+  -- =======================================================
+  -- FAMILIA ROJO NEÓN / ROSA (Keywords, Funciones, Salidas)
+  -- =======================================================
+  red_neon = "#ff007f", -- Rosa Neón Chicle (Se queda exclusivo para nombres de funciones/llamadas)
+  red_dark = "#ff66b2", -- Operadores (Rosa pastel eléctrico)
+  red_return = "#d61958", -- Rojo Rubí Eléctrico
+  pink = "#df4f89", -- Atributos / Regex / Tags
+  pink_light = "#ff9ebb", -- Rosa Pastel Claro (¡Nuevo! Exclusivo para Keywords estructurales)
+  purple = "#b15fe3", -- Morado Neón
+  -- =======================================================
+  -- FAMILIA CYAN / MENTA / ACENTOS (Clases, Módulos, Strings)
+  -- =======================================================
+  cyan_neon = "#19c2cf", -- Cyan vivo (Equivale a tu antiguo cyan1)
+  cyan_soft = "#a7e6ee", -- Strings / Cyan suave (Equivale a tu antiguo cyan2)
+  ice = "#e0f7fa", -- Cyan helado ultra brillante (Nuevo)
+  mint_class = "#7ad7ae", -- Clases y Estructuras (Menta Cyan)
+  lime_import = "#b2ea6d", -- Imports/Exports (Misma rama, otra tonalidad)
+  teal_alt = "#36c69a", -- Tonalidad alternativa para tags/markup (Equivale a teal)
+  blue = "#158db0", -- Azul tecnológico de soporte (Nuevo)
 
-  -- FAMILIA CYAN / MENTA / ACENTOS
-  cyan_neon = "#19c2cf",
-  cyan_soft = "#a7e6ee",
-  ice = "#e0f7fa",
-  mint_class = "#7ad7ae",
-  lime_import = "#b2ea6d",
-  teal_alt = "#36c69a",
-  blue = "#158db0",
+  -- =======================================================
+  -- LITERALES (Datos Duros)
+  -- =======================================================
+  yellow_light = "#f06ca1", -- Propiedades de objetos
+  yellow = "#d2a24b", -- Booleanos (Amarillo)
+  orange = "#3aae91", -- Números (Naranja/Verde tecnológico)
 
-  -- LITERALES
-  yellow_light = "#f06ca1",
-  yellow = "#d2a24b",
-  orange = "#3aae91",
-
+  -- =======================================================
   -- ALERTAS / ESTADOS
+  -- =======================================================
   error1 = "#ff6b78",
   error2 = "#d95763",
   warn1 = "#d6a43a",
