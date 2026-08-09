@@ -45,7 +45,7 @@ function M.setup(c, set)
   -- 3. VARIABLES / POO / PROPIEDADES
   set("@variable", { fg = c.white }) -- Variables Blancas
 
-  set("@variable.member", { fg = c.white }) -- `this.` o `self.`
+  set("@variable.member", { fg = c.blue }) -- `this.` o `self.`
   set("@variable.parameter", { fg = c.fg3, italic = true })
 
   set("@property", { fg = c.yellow_light }) -- Propiedades
