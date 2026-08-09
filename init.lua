@@ -11,3 +11,8 @@ require("config.commands") -- Load commands.
 require("config.keymaps") -- Load keymaps.
 
 require("config.vimpack")
+
+-- Desactivar la ventana de historial de comandos (cmdwin)
+vim.keymap.set("n", "q:", "<Nop>")
+vim.keymap.set("n", "q/", "<Nop>")
+vim.keymap.set("n", "q?", "<Nop>")
