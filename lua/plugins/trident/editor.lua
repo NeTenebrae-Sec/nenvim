@@ -11,6 +11,11 @@ function M.close_floating_editor(win, buf)
     return true
   end
 
+  -- Verificación de seguridad: si la ventana principal ya no es válida, no continuamos
+  if not vim.api.nvim_win_is_valid(win) then
+    return false
+  end
+
   -- 1. Crear buffer efímero para el diálogo de confirmación
   local confirm_buf = vim.api.nvim_create_buf(false, true)
 
@@ -26,7 +31,7 @@ function M.close_floating_editor(win, buf)
   }
   vim.api.nvim_buf_set_lines(confirm_buf, 0, -1, false, lines)
 
-  -- 2. Dimensiones
+  -- 2. Dimensiones basadas en el editor global
   local width = 44
   local height = 5
   local parent_win_width = vim.api.nvim_win_get_width(win)
