@@ -8,7 +8,7 @@ local SPRING_SUPPORTED_JAVA = { ["17"] = true, ["21"] = true, ["23"] = true }
 
 function M.create_project()
   vim.ui.select({
-    "Pure Java (No Build Tool - Ultra Light & Clean)",
+    "Pure Java (No Build Tool)",
     "Standard CLI Application (Maven / Gradle)",
     "Spring Boot Application (Web / API)",
   }, { prompt = "Select Project Type:" }, function(type_choice)

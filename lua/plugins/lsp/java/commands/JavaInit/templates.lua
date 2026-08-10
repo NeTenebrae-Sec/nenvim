@@ -1,6 +1,5 @@
 local M = {}
 
---- Retorna la estructura del Main según la versión elegida
 local function build_main_method_lines(package_name, java_version)
   local ver_num = tonumber(java_version) or 21
   local lines = {}
@@ -10,7 +9,6 @@ local function build_main_method_lines(package_name, java_version)
     table.insert(lines, "")
   end
 
-  -- Sintaxis moderna para Java 26+ (Implicitly declared classes / Unnamed main)
   if ver_num >= 26 then
     table.insert(lines, "public class Main {")
     table.insert(lines, "    void main() {")
@@ -40,7 +38,6 @@ function M.create_pure_java_project(full_path, package_name, java_version)
   -- Guarda el archivo .java-version para detección rápida del entorno
   vim.fn.writefile({ tostring(java_version) }, full_path .. "/.java-version")
 
-  -- FIX CRÍTICO: Especifica StandardVMType/JavaSE-XX para obligar a JDTLS a usarlo
   local classpath_content = {
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<classpath>",

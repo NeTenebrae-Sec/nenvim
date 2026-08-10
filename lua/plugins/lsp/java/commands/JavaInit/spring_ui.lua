@@ -3,8 +3,8 @@ local M = {}
 function M.select_dependencies(callback)
   local available_deps = {
     { id = "web", name = "Spring Web (REST API / Embedded Tomcat)" },
-    { id = "devtools", name = "Spring Boot DevTools (Hot Reloading)" },
-    { id = "lombok", name = "Lombok (Auto Getters/Setters/Constructors)" },
+    { id = "devtools", name = "Spring Boot DevTools" },
+    { id = "lombok", name = "Lombok" },
     { id = "data-jpa", name = "Spring Data JPA (SQL / Hibernate ORM)" },
     { id = "h2", name = "H2 Database (In-Memory DB for testing)" },
   }

@@ -101,7 +101,7 @@ end
 
 function M.setup()
   vim.api.nvim_create_user_command("JavaNewFile", M.create_file, {
-    desc = "Create a new Java File (IntelliJ Style)",
+    desc = "Create a new Java File",
   })
 end
 
