@@ -8,6 +8,9 @@ return {
   list = {
     { url = "https://github.com/sphamba/smear-cursor.nvim", dest = "start/smear-cursor.nvim" },
 
+    -- LSP / Tools Core
+    { url = "https://github.com/mfussenegger/nvim-jdtls", dest = "start/nvim-jdtls" }, -- <-- ¡AGREGA ESTA LÍNEA!
+
     -- Treesitter & Context
     {
       url = "https://github.com/nvim-treesitter/nvim-treesitter",

@@ -2,6 +2,9 @@
 -- NÚCLEO LSP GLOBAL
 -- ============================================================================
 
+-- lua/plugins/lsp/init.lua
+require("plugins.lsp.java").setup()
+
 -- PATH de Mason en el entorno Neovim
 vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 
@@ -66,16 +69,37 @@ for _, server in ipairs(servers) do
   pcall(require, "plugins.lsp.servers." .. server)
 end
 
--- Desactivar LSP y diagnósticos en buffers especiales
+-- Desactivar LSP y diagnósticos en buffers especiales y no modificables
 local lsp_ignore_group = vim.api.nvim_create_augroup("LspIgnoreSpecialBuffers", { clear = true })
 vim.api.nvim_create_autocmd("FileType", {
   group = lsp_ignore_group,
-  pattern = { "undotree", "diff", "qf", "noice" },
+  pattern = {
+    "undotree",
+    "diff",
+    "qf",
+    "noice",
+    "notify",
+    "lspinfo",
+    "mason",
+    "lazy",
+    "checkhealth",
+    "help",
+    "man",
+    "NvimTree",
+    "neo-tree",
+    "trouble",
+  },
   callback = function(ev)
-    vim.diagnostic.enable(false, { bufnr = ev.buf })
+    local buf = ev.buf
+    -- Desactivar diagnósticos explícitamente en el buffer especial
+    vim.diagnostic.enable(false, { bufnr = buf })
+
+    -- Detener/desconectar cualquier cliente LSP activo en este buffer
+    for _, client in ipairs(vim.lsp.get_clients({ bufnr = buf })) do
+      vim.lsp.buf_detach_client(buf, client.id)
+    end
   end,
 })
-
 local lsp_trigger_group = vim.api.nvim_create_augroup("LspTriggerOnRename", { clear = true })
 
 vim.api.nvim_create_autocmd("BufFilePost", {
@@ -90,6 +114,27 @@ vim.api.nvim_create_autocmd("BufFilePost", {
     local detected_ft = vim.filetype.match({ filename = bufname })
     if detected_ft and detected_ft ~= vim.bo[buf].filetype then
       vim.bo[buf].filetype = detected_ft
+    end
+  end,
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("LspSpecialBufferFilter", { clear = true }),
+  callback = function(args)
+    local buf = args.buf
+    -- Si no es un buffer de archivo normal (ej: nofile, prompt, terminal, quickfix)
+    if vim.bo[buf].buftype ~= "" then
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client then
+        vim.lsp.buf_detach_client(buf, client.id)
+      end
+      return
+    end
+
+    -- Desactivar Semantic Tokens (resaltado de colores por LSP)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client then
+      client.server_capabilities.semanticTokensProvider = nil
     end
   end,
 })

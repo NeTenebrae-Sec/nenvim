@@ -387,37 +387,58 @@ end, "Format: File")
 nmap("K", function()
   local params = vim.lsp.util.make_position_params(0, "utf-16")
 
-  -- Disparamos la petición a todos los LSP activos de forma manual y controlada
   vim.lsp.buf_request(0, "textDocument/hover", params, function(err, result, ctx, config)
-    -- Si hay error o la respuesta no tiene contenido (contents), MORIR EN SILENCIO
-    if err or not result or not result.contents then
+    if err then
+      vim.notify("LSP Hover Error: " .. tostring(err.message), vim.log.levels.WARN)
       return
     end
 
-    -- Si un servidor respondió con contenido válido, renderizarlo con Noice o el flotante nativo
+    -- Si el LSP no devolvió nada o no hay contenido
+    if not result or not result.contents then
+      vim.notify("No hay documentación disponible en esta posición", vim.log.levels.INFO)
+      return
+    end
+
+    -- Sanitizar contenido para evitar ventanas flotantes de ancho 0
+    local contents = result.contents
+    local has_text = false
+
+    if type(contents) == "string" and vim.trim(contents) ~= "" then
+      has_text = true
+    elseif type(contents) == "table" then
+      if contents.value and vim.trim(contents.value) ~= "" then
+        has_text = true
+      elseif #contents > 0 then
+        has_text = true
+      end
+    end
+
+    if not has_text then
+      vim.notify("Documentación vacía para este símbolo", vim.log.levels.INFO)
+      return
+    end
+
+    -- Intentar renderizar con Noice o Handler nativo
     local ok_noice, noice_handlers = pcall(require, "noice.lsp.handlers")
-    if ok_noice and noice_handlers.hover then
+    if ok_noice and noice_handlers and noice_handlers.hover then
       noice_handlers.hover(err, result, ctx, config)
     else
-      local _, winnr = vim.lsp.handlers["textDocument/hover"](
-        err,
-        result,
-        ctx,
-        vim.tbl_deep_extend("force", config or {}, {
-          border = "rounded",
-          focusable = true,
-        })
-      )
+      local opts = vim.tbl_deep_extend("force", config or {}, {
+        border = "rounded",
+        focusable = true,
+      })
 
-      -- Desactivar diagnósticos explícitamente en la ventana flotante generada
+      local _, winnr =
+        vim.lsp.open_floating_preview(type(contents) == "table" and contents.value or contents, "markdown", opts)
+
       if winnr and vim.api.nvim_win_is_valid(winnr) then
         local bufnr = vim.api.nvim_win_get_buf(winnr)
-        vim.diagnostic.enable(false, { bufnr = bufnr })
+        pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
       end
     end
   end)
-end, "Universal Silent LSP Hover")
-nmap("gd", vim.lsp.buf.definition, "LSP: Definition")
+end, "Universal Safe LSP Hover")
+
 nmap("gr", vim.lsp.buf.references, "LSP: References")
 nmap("GD", vim.diagnostic.open_float, "LSP: Show diagnostic float")
 nmap("GR", vim.diagnostic.setloclist, "LSP: Open Loclist")

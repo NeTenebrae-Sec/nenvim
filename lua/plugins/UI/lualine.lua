@@ -9,20 +9,17 @@ end
 local function get_intelligent_project_root()
   local current_file = vim.api.nvim_buf_get_name(0)
 
-  -- Si no hay archivo abierto (buffer vacío), usamos el directorio de trabajo de Neovim
   if current_file == "" then
     return vim.fn.getcwd()
   end
 
   local current_dir = vim.fs.dirname(current_file)
 
-  -- Intentamos buscar un directorio .git hacia arriba partiendo de este archivo
   local git_ancestor = vim.fs.find(".git", { path = current_dir, upward = true })[1]
   if git_ancestor then
     return vim.fs.dirname(git_ancestor)
   end
 
-  -- Si no es un repo Git, la raíz será la carpeta que contiene al archivo actual
   return current_dir
 end
 
@@ -46,7 +43,7 @@ local function vite_status()
   return ""
 end
 
--- NUEVO: Detectar servidores LSP activos en el buffer actual sin duplicar nombres
+-- Detectar servidores LSP activos en el buffer actual sin duplicar nombres
 local function active_lsp_servers()
   local clients = vim.lsp.get_clients({ bufnr = 0 })
   if next(clients) == nil then
@@ -64,6 +61,71 @@ local function active_lsp_servers()
   end
 
   return "󰒋 " .. table.concat(lsp_names, ", ")
+end
+
+-- Detectar la versión de Java directamente del LSP y/o Proyecto
+local function java_version()
+  if vim.bo.filetype ~= "java" then
+    return ""
+  end
+
+  -- 1. Consultar directamente al cliente LSP (jdtls)
+  local clients = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })
+  if #clients > 0 then
+    local client = clients[1]
+
+    -- A. Detectar mediante el binario Java con el que jdtls fue instanciado
+    local cmd = client.config and client.config.cmd
+    if cmd and cmd[1] then
+      local ver = cmd[1]:match("java%-(%d+)%-openjdk") or cmd[1]:match("jdk%-(%d+)")
+      if ver then
+        return " Java " .. ver
+      end
+    end
+
+    -- B. Inspeccionar en runtimes declarados en jdtls
+    local runtimes = vim.tbl_get(client.config, "settings", "java", "configuration", "runtimes")
+    if runtimes and type(runtimes) == "table" then
+      for _, rt in ipairs(runtimes) do
+        if rt.name then
+          local ver = rt.name:match("JavaSE%-(%d+)") or rt.name:match("(%d+)")
+          if ver then
+            return " Java " .. ver
+          end
+        end
+      end
+    end
+  end
+
+  -- 2. Fallback: Si jdtls aún está iniciando, leer pom.xml o build.gradle
+  local root = get_intelligent_project_root()
+
+  local pom_path = root .. "/pom.xml"
+  if vim.fn.filereadable(pom_path) == 1 then
+    local content = table.concat(vim.fn.readfile(pom_path), "\n")
+    local ver = content:match("<maven%.compiler%.release>%s*(%d+)%s*</maven%.compiler%.release>")
+      or content:match("<java%.version>%s*(%d+)%s*</java%.version>")
+      or content:match("<maven%.compiler%.source>%s*(%d+)%s*</maven%.compiler%.source>")
+    if ver then
+      return " Java " .. ver
+    end
+  end
+
+  local gradle_path = root .. "/build.gradle"
+  local gradle_kts_path = root .. "/build.gradle.kts"
+  local gpath = vim.fn.filereadable(gradle_path) == 1 and gradle_path
+    or (vim.fn.filereadable(gradle_kts_path) == 1 and gradle_kts_path or nil)
+
+  if gpath then
+    local content = table.concat(vim.fn.readfile(gpath), "\n")
+    local ver = content:match("JavaLanguageVersion%.of%s*%(%s*(%d+)%s*%)")
+      or content:match("sourceCompatibility%s*=%s*['\"]?(%d+)['\"]?")
+    if ver then
+      return " Java " .. ver
+    end
+  end
+
+  return " Java"
 end
 
 -- =========================================================
@@ -102,6 +164,10 @@ lualine.setup({
       },
     },
     lualine_x = {
+      {
+        java_version,
+        color = { fg = "#ff9e64", gui = "bold" },
+      },
       {
         vite_status,
         icon = "󰒋",
