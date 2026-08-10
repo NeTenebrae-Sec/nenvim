@@ -8,7 +8,12 @@ vim.opt.termguicolors = true
 ccc.setup({
   highlighter = {
     auto_enable = true,
-    lsp = true,
+    lsp = false,
+  },
+  pickers = {
+    ccc.picker.hex,
+    ccc.picker.css_rgb,
+    ccc.picker.css_hsl,
   },
   inputs = {
     ccc.input.rgb,
@@ -18,11 +23,6 @@ ccc.setup({
     ccc.output.hex,
     ccc.output.css_rgb,
     ccc.output.css_hsl,
-  },
-  pickers = {
-    ccc.picker.hex,
-    ccc.picker.css_rgb,
-    ccc.picker.css_hsl,
   },
 })
 
