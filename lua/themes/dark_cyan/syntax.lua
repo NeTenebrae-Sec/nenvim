@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup(c, set)
-  -- 1. ESTRUCTURAS Y CONTROL (Fucsia Neón Oscuro / Vibrante)
+  -- 1. ESTRUCTURAS Y CONTROL (Carmesí Eléctrico y Sangre)
   set("@keyword", { fg = c.red_neon, bold = true })
   set("@keyword.conditional", { fg = c.red_neon, bold = true })
   set("@keyword.repeat", { fg = c.red_neon, bold = true })
@@ -11,7 +11,7 @@ function M.setup(c, set)
   set("@storageclass", { fg = c.red_dark })
   set("@operator", { fg = c.red_dark })
 
-  -- 1. ESTRUCTURAS Y CONTROL
+  -- Excepciones y Directivas
   set("@keyword.exception", { fg = c.red_return, bold = true })
   set("@keyword.debug", { fg = c.warn2, bold = true })
   set("@keyword.directive", { fg = c.purple, bold = true })
@@ -23,15 +23,14 @@ function M.setup(c, set)
   set("@keyword.return", { fg = c.red_return, bold = true })
   set("@exception", { fg = c.red_return, bold = true })
 
-  -- Imports y Exports
+  -- Imports y Exports (Violeta Gótico)
   set("@keyword.import", { fg = c.lime_import, bold = true })
   set("@keyword.export", { fg = c.lime_import, bold = true })
 
-  -- 2. FUNCIONES / LLAMADAS / DEFINICIONES (Rosa Pastel Claro)
+  -- 2. FUNCIONES / LLAMADAS / DEFINICIONES (Rosa Malva Claro - Claridad Máxima)
   set("@function", { fg = c.pink_light, bold = true })
   set("@function.call", { fg = c.pink_light })
 
-  -- Métodos de objetos (Separados usando Itálica con el mismo Rosa Claro)
   set("@function.method", { fg = c.pink_light, italic = true })
   set("@function.method.call", { fg = c.pink_light, italic = true })
   set("@method", { fg = c.pink_light, italic = true })
@@ -42,13 +41,13 @@ function M.setup(c, set)
 
   set("@function.macro", { fg = c.pink, bold = true })
 
-  -- 3. VARIABLES / POO / PROPIEDADES
-  set("@variable", { fg = c.white }) -- Variables Blancas
+  -- 3. VARIABLES / POO / PROPIEDADES (Blanco Espectral y Plata)
+  set("@variable", { fg = c.white })
 
-  set("@variable.member", { fg = c.blue }) -- `this.` o `self.`
+  set("@variable.member", { fg = c.cyan_soft })
   set("@variable.parameter", { fg = c.fg3, italic = true })
 
-  set("@property", { fg = c.yellow_light }) -- Propiedades
+  set("@property", { fg = c.yellow_light })
   set("@field", { fg = c.yellow_light })
 
   set("@variable.builtin", { fg = c.cyan_neon, italic = true })
@@ -56,7 +55,7 @@ function M.setup(c, set)
   set("@module.builtin", { fg = c.lime_import, italic = true })
   set("@type.qualifier", { fg = c.mint_class, italic = true })
 
-  -- Clases y Estructuras (Menta Cyan)
+  -- Clases y Estructuras (Lavanda Luminosa)
   set("@type", { fg = c.mint_class, bold = true })
   set("@type.definition", { fg = c.mint_class })
   set("@type.builtin", { fg = c.cyan_neon, bold = true })
@@ -66,8 +65,8 @@ function M.setup(c, set)
   set("@module", { fg = c.lime_import, italic = true })
   set("@label", { fg = c.cyan_neon })
 
-  -- 4. LITERALES DE DATOS
-  set("@string", { fg = c.cyan_soft }) -- Strings Cyan Suave
+  -- 4. LITERALES DE DATOS (Strings Azul Espectral / Números Fuego Oscuro)
+  set("@string", { fg = c.cyan_soft })
   set("@character", { fg = c.cyan_soft })
   set("@string.special", { fg = c.cyan_neon })
   set("@string.special.path", { fg = c.lime_import })
@@ -75,21 +74,20 @@ function M.setup(c, set)
   set("@string.regex", { fg = c.pink })
   set("@string.escape", { fg = c.pink, bold = true })
 
-  set("@number", { fg = c.orange }) -- Números Naranja
-  set("@boolean", { fg = c.yellow, bold = true }) -- Booleanos Amarillos
+  set("@number", { fg = c.orange })
+  set("@boolean", { fg = c.yellow, bold = true })
   set("@constant", { fg = c.orange, bold = true })
   set("@constant.builtin", { fg = c.cyan_neon, bold = true })
   set("@constant.macro", { fg = c.pink, bold = true })
 
-  -- 4. LITERALES DE DATOS
   set("@number.float", { fg = c.orange })
   set("@string.documentation", { fg = c.cyan_soft, italic = true })
   set("@character.special", { fg = c.pink })
   set("@string.special.symbol", { fg = c.cyan_neon })
 
   -- 5. PUNTUACIÓN / COMENTARIOS
-  set("@punctuation.bracket", { fg = c.fg2 })
-  set("@punctuation.delimiter", { fg = c.bg4 })
+  set("@punctuation.bracket", { fg = c.fg1 })
+  set("@punctuation.delimiter", { fg = c.fg2 })
   set("@comment", { fg = c.fg2, italic = true })
   set("@comment.documentation", { fg = c.fg1, italic = true })
 
@@ -123,13 +121,13 @@ function M.setup(c, set)
   set("@markup.list.checked", { fg = c.cyan_neon, bold = true })
   set("@markup.list.unchecked", { fg = c.fg2 })
 
-  -- HTML / XML (Vibras de neón profundo)
+  -- HTML / XML
   set("@constant.html", { fg = c.lime_import, bold = true })
   set("@tag", { fg = c.red_neon, bold = true })
-  set("@tag.delimiter", { fg = c.bg4 })
+  set("@tag.delimiter", { fg = c.fg2 })
   set("@tag.attribute", { fg = c.purple, bold = true })
 
-  -- CSS / SCSS / LESS (Perfect Sync con tu HTML)
+  -- CSS / SCSS / LESS
   set("@tag.css", { fg = c.red_neon, bold = true })
   set("@type.css", { fg = c.mint_class, bold = true })
   set("@property.css", { fg = c.purple, bold = true })
@@ -142,36 +140,36 @@ function M.setup(c, set)
   set("Debug", { fg = c.error2, bold = true })
 
   -- RAINBOW DELIMITERS
-  set("RainbowDelimiterRed", { fg = c.cyan_neon })
+  set("RainbowDelimiterRed", { fg = c.red_neon })
   set("RainbowDelimiterYellow", { fg = c.yellow })
   set("RainbowDelimiterBlue", { fg = c.cyan_soft })
   set("RainbowDelimiterOrange", { fg = c.orange })
   set("RainbowDelimiterGreen", { fg = c.mint_class })
-  set("RainbowDelimiterViolet", { fg = c.lime_import })
+  set("RainbowDelimiterViolet", { fg = c.purple })
   set("RainbowDelimiterCyan", { fg = c.teal_alt })
 
   -- RENDER MARKDOWN
-  set("RenderMarkdownH1", { fg = c.cyan1, bold = true })
-  set("RenderMarkdownH2", { fg = c.cyan2, bold = true })
-  set("RenderMarkdownH3", { fg = c.ice, bold = true })
-  set("RenderMarkdownH4", { fg = c.teal, bold = true })
+  set("RenderMarkdownH1", { fg = c.red_neon, bold = true })
+  set("RenderMarkdownH2", { fg = c.purple, bold = true })
+  set("RenderMarkdownH3", { fg = c.mint_class, bold = true })
+  set("RenderMarkdownH4", { fg = c.cyan_neon, bold = true })
   set("RenderMarkdownH5", { fg = c.blue, bold = true })
-  set("RenderMarkdownH6", { fg = c.purple, bold = true })
-  set("RenderMarkdownH1Bg", { fg = c.cyan1, bg = "#0b1f28", bold = true })
-  set("RenderMarkdownH2Bg", { fg = c.cyan2, bg = c.bg1, bold = true })
-  set("RenderMarkdownBullet", { fg = c.cyan1, bold = true })
-  set("RenderMarkdownNumber", { fg = c.blue, bold = true })
+  set("RenderMarkdownH6", { fg = c.pink, bold = true })
+  set("RenderMarkdownH1Bg", { fg = c.red_neon, bg = "#250a10", bold = true })
+  set("RenderMarkdownH2Bg", { fg = c.purple, bg = c.bg1, bold = true })
+  set("RenderMarkdownBullet", { fg = c.red_neon, bold = true })
+  set("RenderMarkdownNumber", { fg = c.purple, bold = true })
   set("RenderMarkdownTableHead", { fg = c.purple, bold = true })
   set("RenderMarkdownTableRow", { fg = c.fg0 })
   set("RenderMarkdownTableFill", { fg = c.fg2 })
   set("RenderMarkdownTableBorder", { fg = c.border })
   set("RenderMarkdownCode", { bg = c.bg1 })
-  set("RenderMarkdownCodeInline", { fg = c.cyan1, bg = c.bg2 })
+  set("RenderMarkdownCodeInline", { fg = c.cyan_soft, bg = c.bg2 })
   set("RenderMarkdownQuote", { fg = c.fg2, bg = c.bg1 })
   set("RenderMarkdownRule", { fg = c.border })
   set("RenderMarkdownInfo", { fg = c.blue, bold = true })
-  set("RenderMarkdownSuccess", { fg = c.teal, bold = true })
-  set("RenderMarkdownError", { fg = c.cyan1, bold = true })
+  set("RenderMarkdownSuccess", { fg = c.mint_class, bold = true })
+  set("RenderMarkdownError", { fg = c.error1, bold = true })
   set("RenderMarkdownWarn", { fg = c.warn2, bold = true })
 end
 
