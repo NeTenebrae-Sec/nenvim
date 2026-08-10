@@ -393,48 +393,38 @@ nmap("K", function()
       return
     end
 
-    -- Si el LSP no devolvió nada o no hay contenido
+    -- Si no hay contenido
     if not result or not result.contents then
       vim.notify("No hay documentación disponible en esta posición", vim.log.levels.INFO)
       return
     end
 
-    -- Sanitizar contenido para evitar ventanas flotantes de ancho 0
-    local contents = result.contents
-    local has_text = false
-
-    if type(contents) == "string" and vim.trim(contents) ~= "" then
-      has_text = true
-    elseif type(contents) == "table" then
-      if contents.value and vim.trim(contents.value) ~= "" then
-        has_text = true
-      elseif #contents > 0 then
-        has_text = true
-      end
-    end
-
-    if not has_text then
+    -- Convertir MarkupContent/MarkedString a líneas de texto válidas vía API nativa
+    local markdown_lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
+    if vim.tbl_isempty(markdown_lines) then
       vim.notify("Documentación vacía para este símbolo", vim.log.levels.INFO)
       return
     end
 
-    -- Intentar renderizar con Noice o Handler nativo
+    -- 1. Intentar renderizar con Noice
     local ok_noice, noice_handlers = pcall(require, "noice.lsp.handlers")
     if ok_noice and noice_handlers and noice_handlers.hover then
       noice_handlers.hover(err, result, ctx, config)
-    else
-      local opts = vim.tbl_deep_extend("force", config or {}, {
-        border = "rounded",
-        focusable = true,
-      })
+      return
+    end
 
-      local _, winnr =
-        vim.lsp.open_floating_preview(type(contents) == "table" and contents.value or contents, "markdown", opts)
+    -- 2. Fallback nativo usando vim.lsp.util.open_floating_preview (Nvim 0.12 compatible)
+    local opts = vim.tbl_deep_extend("force", config or {}, {
+      border = "rounded",
+      focusable = true,
+      max_width = 80,
+    })
 
-      if winnr and vim.api.nvim_win_is_valid(winnr) then
-        local bufnr = vim.api.nvim_win_get_buf(winnr)
-        pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
-      end
+    local bufnr, winnr = vim.lsp.util.open_floating_preview(markdown_lines, "markdown", opts)
+
+    if winnr and vim.api.nvim_win_is_valid(winnr) then
+      -- Desactivar diagnósticos dentro de la ventana de documentación
+      pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
     end
   end)
 end, "Universal Safe LSP Hover")
