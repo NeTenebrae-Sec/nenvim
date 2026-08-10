@@ -26,7 +26,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 
 -- ============================================================================
--- SYSTEM DEBUGGER (NO EMOJIS / VIMPAC 0.12 COMPATIBLE)
+-- SYSTEM DEBUGGER
 -- ============================================================================
 
 local function generate_debug_report()
@@ -306,5 +306,5 @@ local function generate_performance_report()
   end
 end
 
--- Registrar comando :Profile
+-- Command :Profile
 vim.api.nvim_create_user_command("Profile", generate_performance_report, {})

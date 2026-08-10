@@ -13,7 +13,7 @@ otter.setup({
   },
 })
 
--- Mapeo de filetypes y lenguajes inyectados
+-- Mapeo de filetypes e idiomas inyectados
 local injected_languages = {
   html = { "javascript", "css" },
   astro = { "typescript", "javascript", "css" },
@@ -28,37 +28,45 @@ vim.api.nvim_create_autocmd("FileType", {
   callback = function(args)
     local buf = args.buf
 
-    -- Ignorar buffers que no sean archivos reales
+    -- 1. Ignorar buffers especiales (undotree, noice, popups, etc.)
     if vim.bo[buf].buftype ~= "" then
       return
     end
 
-    -- Ignorar archivos demasiado grandes (más de 5MB) para no ahogar el editor
+    -- 2. Ignorar si la opción modifiable está apagada
+    if not vim.bo[buf].modifiable then
+      return
+    end
+
+    -- 3. Ignorar archivos grandes (+5MB)
     local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(buf))
     if ok and stats and stats.size > 5 * 1024 * 1024 then
       return
     end
 
-    -- Evitar que Otter se vuelva a activar en sus propios buffers virtuales (.otter.js, .otter.css)
+    -- 4. Evitar re-activación en buffers virtuales de Otter (.otter.js, etc.)
     if vim.b[buf].otter_activated then
       return
     end
 
-    -- Marcar como activado para romper cualquier ciclo
-    vim.b[buf].otter_activated = true
-
-    -- EJECUCIÓN ASÍNCRONA
-    -- 'vim.schedule' permite que Neovim renderice el archivo primero y luego active Otter
     vim.schedule(function()
       if not vim.api.nvim_buf_is_valid(buf) then
         return
       end
 
+      -- 5. VERIFICACIÓN DE TREESITTER: Solo activar Otter si hay un parser válido instalado
       local ft = vim.bo[buf].filetype
+      local has_parser = pcall(vim.treesitter.get_parser, buf, ft)
+
+      if not has_parser then
+        return -- Sale en silencio si no hay parser cargado/instalado
+      end
+
+      vim.b[buf].otter_activated = true
       local langs = injected_languages[ft]
 
       if langs then
-        otter.activate(langs, true, true, nil)
+        pcall(otter.activate, langs, true, true, nil)
       end
     end)
   end,
