@@ -1,6 +1,5 @@
 local M = {}
 
---- Detects installed JDK versions in Arch Linux (/usr/lib/jvm)
 function M.get_installed_jdks()
   local jvm_dir = "/usr/lib/jvm"
   local detected = {}
@@ -24,7 +23,7 @@ function M.get_installed_jdks()
     return tonumber(a) > tonumber(b)
   end)
 
-  return #detected > 0 and detected or { "26", "21", "17" }
+  return #detected > 0 and detected or { "26", "21", "17", "8" }
 end
 
 return M

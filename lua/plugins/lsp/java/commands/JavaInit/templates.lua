@@ -26,7 +26,7 @@ local function build_main_method_lines(package_name, java_version)
   return lines
 end
 
---- Crea un proyecto Pure Java simplificado (fuentes en src/) con metadata explicita para JDTLS
+--- Crea un proyecto Pure Java con contenedor JRE dinámico
 function M.create_pure_java_project(full_path, package_name, java_version)
   local pkg_dir = full_path .. "/src/" .. package_name:gsub("%.", "/")
   vim.fn.mkdir(pkg_dir, "p")
@@ -35,16 +35,14 @@ function M.create_pure_java_project(full_path, package_name, java_version)
   local main_code = build_main_method_lines(package_name, java_version)
   vim.fn.writefile(main_code, main_file)
 
-  -- Guarda el archivo .java-version para detección rápida del entorno
   vim.fn.writefile({ tostring(java_version) }, full_path .. "/.java-version")
 
+  -- REFERENCIA CANÓNICA DEL JRE (resuelve automáticamente según el SDK activo)
   local classpath_content = {
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<classpath>",
     '    <classpathentry kind="src" path="src"/>',
-    '    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-'
-      .. java_version
-      .. '"/>',
+    '    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>',
     '    <classpathentry kind="output" path="bin"/>',
     "</classpath>",
   }
@@ -73,12 +71,10 @@ function M.create_pure_java_project(full_path, package_name, java_version)
   return main_file
 end
 
---- Crea la estructura estándar de Maven/Gradle (src/main/java)
 function M.create_main_class(full_path, package_name, java_version)
   local pkg_dir = full_path .. "/src/main/java/" .. package_name:gsub("%.", "/")
   vim.fn.mkdir(pkg_dir, "p")
 
-  -- Guarda el archivo .java-version también en proyectos con build tool
   vim.fn.writefile({ tostring(java_version) }, full_path .. "/.java-version")
 
   local main_file = pkg_dir .. "/Main.java"
@@ -87,7 +83,6 @@ function M.create_main_class(full_path, package_name, java_version)
   return main_file
 end
 
---- Genera un pom.xml puro para Maven
 function M.generate_pure_maven_pom(full_path, group_id, artifact_id, java_version)
   local pom_content = {
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -109,7 +104,6 @@ function M.generate_pure_maven_pom(full_path, group_id, artifact_id, java_versio
   vim.fn.writefile(pom_content, full_path .. "/pom.xml")
 end
 
---- Genera un script de construcción puro para Gradle
 function M.generate_pure_gradle_build(full_path, group_id, artifact_id, java_version, is_kotlin_dsl)
   local gradle_content = {}
   if is_kotlin_dsl then

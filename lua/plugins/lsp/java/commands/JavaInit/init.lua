@@ -4,7 +4,7 @@ local jdks = require("plugins.lsp.java.commands.JavaInit.jdks")
 local templates = require("plugins.lsp.java.commands.JavaInit.templates")
 local spring_ui = require("plugins.lsp.java.commands.JavaInit.spring_ui")
 
-local SPRING_SUPPORTED_JAVA = { ["17"] = true, ["21"] = true, ["23"] = true }
+local SPRING_SUPPORTED_JAVA = { ["17"] = true, ["21"] = true, ["25"] = true }
 
 function M.create_project()
   vim.ui.select({

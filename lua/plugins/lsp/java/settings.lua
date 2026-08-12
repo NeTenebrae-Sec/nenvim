@@ -1,6 +1,5 @@
 local M = {}
 
---- Mapea los JDKs instalados en el sistema
 local function get_configured_runtimes()
   local runtimes = {}
   local jvm_dir = "/usr/lib/jvm"
@@ -9,12 +8,11 @@ local function get_configured_runtimes()
     local entries = vim.fn.glob(jvm_dir .. "/*", false, true)
     for _, path in ipairs(entries) do
       local name = vim.fn.fnamemodify(path, ":t")
-      -- Filtrar alias genéricos
       if name ~= "default" and name ~= "default-runtime" and name ~= "current" then
         local ver = name:match("(%d+)")
         if ver then
           table.insert(runtimes, {
-            name = "JavaSE-" .. ver,
+            name = "JavaSE-" .. (ver == "8" and "1.8" or ver),
             path = path,
           })
         end
@@ -22,7 +20,6 @@ local function get_configured_runtimes()
     end
   end
 
-  -- Fallback en caso de no encontrar rastro
   if #runtimes == 0 then
     table.insert(runtimes, {
       name = "JavaSE-21",
