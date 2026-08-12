@@ -63,42 +63,25 @@ local function active_lsp_servers()
   return "󰒋 " .. table.concat(lsp_names, ", ")
 end
 
--- Detectar la versión de Java directamente del LSP y/o Proyecto
+-- Detectar la versión de Java directamente del PROYECTO
 local function java_version()
   if vim.bo.filetype ~= "java" then
     return ""
   end
 
-  -- 1. Consultar directamente al cliente LSP (jdtls)
-  local clients = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })
-  if #clients > 0 then
-    local client = clients[1]
+  local root = get_intelligent_project_root()
 
-    -- A. Detectar mediante el binario Java con el que jdtls fue instanciado
-    local cmd = client.config and client.config.cmd
-    if cmd and cmd[1] then
-      local ver = cmd[1]:match("java%-(%d+)%-openjdk") or cmd[1]:match("jdk%-(%d+)")
+  -- 1. Analizar archivos del proyecto (.java-version, pom.xml, build.gradle)
+  local java_ver_path = root .. "/.java-version"
+  if vim.fn.filereadable(java_ver_path) == 1 then
+    local lines = vim.fn.readfile(java_ver_path)
+    if #lines > 0 then
+      local ver = lines[1]:match("(%d+)")
       if ver then
         return " Java " .. ver
       end
     end
-
-    -- B. Inspeccionar en runtimes declarados en jdtls
-    local runtimes = vim.tbl_get(client.config, "settings", "java", "configuration", "runtimes")
-    if runtimes and type(runtimes) == "table" then
-      for _, rt in ipairs(runtimes) do
-        if rt.name then
-          local ver = rt.name:match("JavaSE%-(%d+)") or rt.name:match("(%d+)")
-          if ver then
-            return " Java " .. ver
-          end
-        end
-      end
-    end
   end
-
-  -- 2. Fallback: Si jdtls aún está iniciando, leer pom.xml o build.gradle
-  local root = get_intelligent_project_root()
 
   local pom_path = root .. "/pom.xml"
   if vim.fn.filereadable(pom_path) == 1 then
@@ -119,9 +102,35 @@ local function java_version()
   if gpath then
     local content = table.concat(vim.fn.readfile(gpath), "\n")
     local ver = content:match("JavaLanguageVersion%.of%s*%(%s*(%d+)%s*%)")
-      or content:match("sourceCompatibility%s*=%s*['\"]?(%d+)['\"]?")
+      or content:match("sourceCompatibility%s*=%s*['\"]?(%d+)")
     if ver then
       return " Java " .. ver
+    end
+  end
+
+  -- 2. Consultar la variable de ejecutable configurada en el plugin de Java
+  local ok_java, java_mod = pcall(require, "plugins.lsp.java")
+  if ok_java and java_mod.current_java_bin then
+    local ver = java_mod.current_java_bin:match("java%-(%d+)") or java_mod.current_java_bin:match("jdk%-(%d+)")
+    if ver then
+      return " Java " .. ver
+    end
+  end
+
+  -- 3. Inspeccionar runtimes explícitos dentro de la configuración de JDTLS
+  local clients = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })
+  if #clients > 0 then
+    local client = clients[1]
+    local runtimes = vim.tbl_get(client.config, "settings", "java", "configuration", "runtimes")
+    if runtimes and type(runtimes) == "table" then
+      for _, rt in ipairs(runtimes) do
+        if rt.default and rt.name then
+          local ver = rt.name:match("JavaSE%-(%d+)") or rt.name:match("(%d+)")
+          if ver then
+            return " Java " .. ver
+          end
+        end
+      end
     end
   end
 
