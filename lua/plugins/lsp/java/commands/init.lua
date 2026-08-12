@@ -24,6 +24,12 @@ function M.setup()
   if ok_gen and type(java_gen.setup) == "function" then
     java_gen.setup()
   end
+
+  -- JavaCleanCache
+  local ok_clean, java_clean = pcall(require, "plugins.lsp.java.commands.JavaCleanCache")
+  if ok_clean and type(java_clean.setup) == "function" then
+    java_clean.setup()
+  end
 end
 
 return M
