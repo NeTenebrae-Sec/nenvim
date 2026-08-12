@@ -9,7 +9,7 @@ return {
     { url = "https://github.com/sphamba/smear-cursor.nvim", dest = "start/smear-cursor.nvim" },
 
     -- LSP / Tools Core
-    { url = "https://github.com/mfussenegger/nvim-jdtls", dest = "start/nvim-jdtls" }, -- <-- ¡AGREGA ESTA LÍNEA!
+    { url = "https://github.com/mfussenegger/nvim-jdtls", dest = "start/nvim-jdtls" },
 
     -- Treesitter & Context
     {
@@ -59,7 +59,11 @@ return {
     { url = "https://github.com/hrsh7th/cmp-path", dest = "start/cmp-path" },
     { url = "https://github.com/saadparwaiz1/cmp_luasnip", dest = "start/cmp_luasnip" },
     { url = "https://github.com/rafamadriz/friendly-snippets", dest = "start/friendly-snippets" },
-    { url = "https://github.com/L3MON4D3/LuaSnip", dest = "start/LuaSnip" },
+    {
+      url = "https://github.com/L3MON4D3/LuaSnip",
+      dest = "start/LuaSnip",
+      build = "make install_jsregexp",
+    },
     { url = "https://github.com/mg979/vim-visual-multi", dest = "start/vim-visual-multi" },
     { url = "https://github.com/Jezda1337/nvim-html-css", dest = "start/nvim-html-css" },
 
