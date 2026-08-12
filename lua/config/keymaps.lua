@@ -387,43 +387,79 @@ end, "Format: File")
 nmap("K", function()
   local params = vim.lsp.util.make_position_params(0, "utf-16")
 
-  vim.lsp.buf_request(0, "textDocument/hover", params, function(err, result, ctx, config)
-    if err then
-      vim.notify("LSP Hover Error: " .. tostring(err.message), vim.log.levels.WARN)
-      return
+  -- PASO 1: Usamos buf_request_all en lugar de buf_request para consultar
+  -- a TODOS los LSP activos en el buffer simultáneamente en una sola llamada.
+  vim.lsp.buf_request_all(0, "textDocument/hover", params, function(responses)
+    local combined_markdown = {}
+
+    -- PASO 2: Iteramos sobre las respuestas de cada servidor cliente adjunto
+    for client_id, resp in pairs(responses or {}) do
+      local client = vim.lsp.get_client_by_id(client_id)
+      local client_name = client and client.name or "LSP"
+
+      -- Verificar que el servidor no haya devuelto error y que contenga 'contents'
+      if not resp.err and resp.result and resp.result.contents then
+        -- Convertir el formato del LSP a líneas markdown nativas
+        local lines = vim.lsp.util.convert_input_to_markdown_lines(resp.result.contents)
+
+        -- Filtrar líneas vacías o compuestas puramente de espacios
+        lines = vim.tbl_filter(function(line)
+          return line and line:match("%S") ~= nil
+        end, lines)
+
+        -- Si este LSP en particular sí tiene documentación válida, la acumulamos
+        if not vim.tbl_isempty(lines) then
+          -- Opcional: Si hay más de un LSP activo con info, agregamos un encabezado para distinguir la fuente
+          if #combined_markdown > 0 then
+            table.insert(combined_markdown, "---")
+          end
+
+          for _, line in ipairs(lines) do
+            table.insert(combined_markdown, line)
+          end
+        end
+      end
     end
 
-    -- Si no hay contenido
-    if not result or not result.contents then
+    -- PASO 3: Evaluar si se encontró información útil de AL MENOS UN servidor.
+    -- Si ningún LSP devolvió información útil, emitimos UNA SOLA alerta global.
+    if vim.tbl_isempty(combined_markdown) then
       vim.notify("No hay documentación disponible en esta posición", vim.log.levels.INFO)
       return
     end
 
-    -- Convertir MarkupContent/MarkedString a líneas de texto válidas vía API nativa
-    local markdown_lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
-    if vim.tbl_isempty(markdown_lines) then
-      vim.notify("Documentación vacía para este símbolo", vim.log.levels.INFO)
-      return
-    end
-
-    -- 1. Intentar renderizar con Noice
+    -- PASO 4: Intentar renderizar la documentación combinada mediante Noice.nvim
     local ok_noice, noice_handlers = pcall(require, "noice.lsp.handlers")
     if ok_noice and noice_handlers and noice_handlers.hover then
-      noice_handlers.hover(err, result, ctx, config)
+      -- Reestructuramos un resultado sintético unificado para Noice
+      local synthetic_result = {
+        contents = combined_markdown,
+      }
+      noice_handlers.hover(nil, synthetic_result, { method = "textDocument/hover" }, {})
       return
     end
 
-    -- 2. Fallback nativo usando vim.lsp.util.open_floating_preview (Nvim 0.12 compatible)
-    local opts = vim.tbl_deep_extend("force", config or {}, {
+    -- PASO 5: Fallback nativo usando open_floating_preview
+    local opts = {
       border = "rounded",
       focusable = true,
       max_width = 80,
-    })
+      max_height = 20,
+    }
 
-    local bufnr, winnr = vim.lsp.util.open_floating_preview(markdown_lines, "markdown", opts)
+    -- Guardarraíl para garantizar que el cálculo de ancho dinámico de Neovim
+    -- nunca colapse a 0 provocando el crash 'Invalid width'
+    if vim.lsp.util._make_floating_popup_size then
+      local width, _ = vim.lsp.util._make_floating_popup_size(combined_markdown, opts)
+      if width < 1 then
+        opts.width = 1
+      end
+    end
+
+    local bufnr, winnr = vim.lsp.util.open_floating_preview(combined_markdown, "markdown", opts)
 
     if winnr and vim.api.nvim_win_is_valid(winnr) then
-      -- Desactivar diagnósticos dentro de la ventana de documentación
+      -- Desactivar diagnósticos dentro de la ventana de vista previa flotante
       pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
     end
   end)
