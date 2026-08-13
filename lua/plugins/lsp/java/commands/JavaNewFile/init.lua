@@ -12,9 +12,12 @@ local FILE_TYPES = {
 local function detect_package_name(current_dir)
   local path = current_dir:gsub("\\", "/")
 
-  local match_std = path:match("src/main/java/(.+)$")
+  -- Soporte para código fuente principal y de pruebas
+  local match_main = path:match("src/main/java/(.+)$")
+  local match_test = path:match("src/test/java/(.+)$")
   local match_pure = path:match("src/(.+)$")
-  local rel_path = match_std or match_pure
+
+  local rel_path = match_main or match_test or match_pure
 
   if rel_path and rel_path ~= "" then
     return rel_path:gsub("/", ".")
@@ -24,8 +27,12 @@ local function detect_package_name(current_dir)
 end
 
 function M.create_file()
-  local cwd = vim.fn.expand("%:p:h")
-  if cwd == "" or cwd == "." then
+  local current_buf = vim.api.nvim_buf_get_name(0)
+  local cwd = ""
+
+  if current_buf ~= "" then
+    cwd = vim.fn.fnamemodify(current_buf, ":p:h")
+  else
     cwd = vim.fn.getcwd()
   end
 
@@ -44,19 +51,34 @@ function M.create_file()
     vim.ui.input({
       prompt = "File Name (e.g. UserController): ",
     }, function(file_name)
-      if not file_name or file_name == "" then
+      if not file_name or file_name:match("^%s*$") then
         return
       end
 
-      file_name = file_name:gsub("%.java$", "")
+      -- Limpia extensión e espacios accidentales
+      file_name = file_name:gsub("%.java$", ""):gsub("%s+", "")
 
       vim.ui.input({
         prompt = "Package: ",
         default = detected_package,
       }, function(pkg_name)
         pkg_name = pkg_name or ""
+        pkg_name = pkg_name:gsub("^%s*(.-)%s*$", "%1") -- trim
 
-        local target_file = cwd .. "/" .. file_name .. ".java"
+        local target_dir = cwd
+
+        -- Si el usuario cambia el paquete a uno distinto, recalculamos la ruta base
+        if pkg_name ~= "" and detected_package ~= "" and pkg_name ~= detected_package then
+          local base_src = cwd:sub(1, #cwd - #detected_package:gsub("%.", "/"))
+          target_dir = base_src .. pkg_name:gsub("%.", "/")
+        end
+
+        -- Garantiza que las carpetas destino existan
+        if vim.fn.isdirectory(target_dir) == 0 then
+          vim.fn.mkdir(target_dir, "p")
+        end
+
+        local target_file = target_dir .. "/" .. file_name .. ".java"
 
         if vim.fn.filereadable(target_file) == 1 then
           vim.notify("File already exists: " .. target_file, vim.log.levels.ERROR)
@@ -72,26 +94,37 @@ function M.create_file()
         local kind = selected_type.template
         if kind == "class" then
           table.insert(lines, string.format("public class %s {", file_name))
+          table.insert(lines, "    ")
           table.insert(lines, "}")
         elseif kind == "interface" then
           table.insert(lines, string.format("public interface %s {", file_name))
+          table.insert(lines, "    ")
           table.insert(lines, "}")
         elseif kind == "enum" then
           table.insert(lines, string.format("public enum %s {", file_name))
+          table.insert(lines, "    ")
           table.insert(lines, "}")
         elseif kind == "record" then
           table.insert(lines, string.format("public record %s() {", file_name))
           table.insert(lines, "}")
         elseif kind == "annotation" then
           table.insert(lines, string.format("public @interface %s {", file_name))
+          table.insert(lines, "    ")
           table.insert(lines, "}")
         end
 
         vim.fn.writefile(lines, target_file)
         vim.cmd("edit " .. vim.fn.fnameescape(target_file))
 
-        local target_line = pkg_name ~= "" and 4 or 2
-        vim.api.nvim_win_set_cursor(0, { target_line, 4 })
+        -- Posicionamiento inteligente del cursor
+        if kind == "record" then
+          local record_line = pkg_name ~= "" and 3 or 1
+          local col = #string.format("public record %s(", file_name)
+          vim.api.nvim_win_set_cursor(0, { record_line, col })
+        else
+          local body_line = pkg_name ~= "" and 4 or 2
+          vim.api.nvim_win_set_cursor(0, { body_line, 4 })
+        end
 
         vim.notify("Created " .. selected_type.label .. ": " .. file_name .. ".java", vim.log.levels.INFO)
       end)

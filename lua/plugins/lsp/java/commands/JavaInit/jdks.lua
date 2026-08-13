@@ -23,7 +23,7 @@ function M.get_installed_jdks()
     return tonumber(a) > tonumber(b)
   end)
 
-  return #detected > 0 and detected or { "26", "21", "17", "8" }
+  return #detected > 0 and detected or { "26", "25", "21", "17", "8" }
 end
 
 return M

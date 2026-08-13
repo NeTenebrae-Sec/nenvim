@@ -9,7 +9,7 @@ local function build_main_method_lines(package_name, java_version)
     table.insert(lines, "")
   end
 
-  if ver_num >= 26 then
+  if ver_num >= 21 then
     table.insert(lines, "public class Main {")
     table.insert(lines, "    void main() {")
     table.insert(lines, '        System.out.println("Running on Java: " + System.getProperty("java.version"));')
@@ -26,7 +26,6 @@ local function build_main_method_lines(package_name, java_version)
   return lines
 end
 
---- Crea un proyecto Pure Java con contenedor JRE dinámico
 function M.create_pure_java_project(full_path, package_name, java_version)
   local pkg_dir = full_path .. "/src/" .. package_name:gsub("%.", "/")
   vim.fn.mkdir(pkg_dir, "p")
@@ -37,7 +36,6 @@ function M.create_pure_java_project(full_path, package_name, java_version)
 
   vim.fn.writefile({ tostring(java_version) }, full_path .. "/.java-version")
 
-  -- REFERENCIA CANÓNICA DEL JRE (resuelve automáticamente según el SDK activo)
   local classpath_content = {
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<classpath>",

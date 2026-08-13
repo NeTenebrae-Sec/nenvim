@@ -19,10 +19,16 @@ function M.setup()
     java_org.setup()
   end
 
-  -- JavaGenerateCode
+  -- JavaGenerateCode (Directorio modular con init.lua)
   local ok_gen, java_gen = pcall(require, "plugins.lsp.java.commands.JavaGenerateCode")
   if ok_gen and type(java_gen.setup) == "function" then
     java_gen.setup()
+  end
+
+  -- JavaAddLombok
+  local ok_lombok, java_lombok = pcall(require, "plugins.lsp.java.commands.JavaAddLombok")
+  if ok_lombok and type(java_lombok.setup) == "function" then
+    java_lombok.setup()
   end
 
   -- JavaCleanCache
