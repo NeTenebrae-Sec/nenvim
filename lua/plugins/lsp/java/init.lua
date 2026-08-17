@@ -21,6 +21,20 @@ function M.setup()
   end)
 
   local function start_jdtls()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+
+    -- GUARDIA REFORZADA: Evita que maybe_implicit_save() ejecute `:w` en un buffer vacío/inválido
+    if
+      bufname == ""
+      or vim.bo[bufnr].buftype ~= ""
+      or vim.fn.filereadable(bufname) == 0
+      or vim.api.nvim_buf_line_count(bufnr) == 0
+      or (vim.api.nvim_buf_line_count(bufnr) == 1 and vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1] == "")
+    then
+      return
+    end
+
     local home = os.getenv("HOME")
     logger.debug("== INICIANDO CONFIGURACIÓN DE JDTLS ==")
 
@@ -38,11 +52,24 @@ function M.setup()
 
     logger.debug("Root Directorio detectado:", root_dir)
 
-    -- Resolver versión e instalador de Java
+    -- LIMPIEZA AUTOMÁTICA DE LA CARPETA OUT
+    local out_dir = root_dir .. "/out"
+    if vim.fn.isdirectory(out_dir) == 1 then
+      vim.fn.delete(out_dir, "rf")
+      logger.debug("Carpeta 'out' limpiada automáticamente")
+    end
+
+    -- Separar la JVM del Servidor LSP de la JVM del Proyecto
     local target_ver = detector.detect_target_version(root_dir)
-    local java_bin = detector.resolve_java_bin(target_ver)
-    M.current_java_bin = java_bin
-    logger.debug("Binario Java seleccionado:", java_bin)
+
+    -- JDTLS se ejecuta con Java 21+
+    local jdtls_java_bin = detector.get_jdtls_runtime_java()
+    -- El proyecto/debugger usa la versión real asignada
+    local project_java_bin = detector.resolve_project_java_bin(target_ver)
+
+    M.current_java_bin = project_java_bin
+    logger.debug("Binario JDTLS:", jdtls_java_bin)
+    logger.debug("Binario Proyecto/DAP:", project_java_bin)
 
     -- Configurar Rutas y Jars de Mason
     local mason_path = home .. "/.local/share/nvim/mason/packages"
@@ -66,9 +93,8 @@ function M.setup()
       table.insert(bundles, debug_jars[1])
     end
 
-    -- Generar comando
     local cmd_args = builder.build_cmd({
-      java_bin = java_bin,
+      java_bin = jdtls_java_bin,
       lombok_jar = lombok.get_jar_path(),
       path_to_jar = path_to_jar,
       path_to_config = path_to_config,
@@ -87,8 +113,34 @@ function M.setup()
         extendedClientCapabilities = extendedClientCapabilities,
       },
       settings = settings.get_settings(),
+
+      handlers = {
+        ["window/showMessage"] = function(_, result, _)
+          if not result or result.type == 4 then
+            return
+          end
+
+          local msg = result.message or ""
+          if msg:lower():find("validate") or msg:lower():find("building") then
+            return
+          end
+
+          local levels = {
+            [1] = vim.log.levels.ERROR,
+            [2] = vim.log.levels.WARN,
+            [3] = vim.log.levels.INFO,
+          }
+
+          vim.notify(result.message or "", levels[result.type] or vim.log.levels.INFO, { title = "Java LSP (JDTLS)" })
+        end,
+      },
       on_attach = function(_, _)
-        jdtls.setup_dap({ hotcodereplace = "auto", config_overrides = {} })
+        jdtls.setup_dap({
+          hotcodereplace = "auto",
+          config_overrides = {
+            classPaths = { "${workspaceFolder}/out" },
+          },
+        })
 
         local ok_jdtls_dap, jdtls_dap = pcall(require, "jdtls.dap")
         if ok_jdtls_dap then
@@ -98,13 +150,17 @@ function M.setup()
         local ok_dap, dap = pcall(require, "dap")
         if ok_dap and dap.configurations.java then
           for _, dap_config in ipairs(dap.configurations.java) do
-            dap_config.javaExec = java_bin
+            dap_config.javaExec = project_java_bin
+            dap_config.classPaths = { "${workspaceFolder}/out" }
           end
         end
       end,
     }
 
-    jdtls.start_or_attach(config)
+    -- Proteger la ejecución de start_or_attach
+    pcall(function()
+      jdtls.start_or_attach(config)
+    end)
   end
 
   -- Auto-comando para buffers de tipo java

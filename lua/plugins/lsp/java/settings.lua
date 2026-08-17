@@ -1,3 +1,7 @@
+-- ============================================================================
+-- MÓDULO: lua/plugins/lsp/java/settings.lua
+-- ============================================================================
+
 local M = {}
 
 local function get_configured_runtimes()
@@ -34,8 +38,10 @@ end
 function M.get_settings()
   return {
     java = {
+      format = format_settings,
       project = {
         sourcePaths = { "src", "src/main/java" },
+        outputPath = "out",
       },
       eclipse = { downloadSources = true },
       maven = { downloadSources = true },

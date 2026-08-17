@@ -93,19 +93,25 @@ vim.opt.foldlevel = 99
 -- =========================================================
 -- 👑 STICKY SCROLL (Contexto superior al bajar)
 -- =========================================================
-local ok_context, context = pcall(require, "treesitter_context") -- 🎯 ¡Cambiado a guion bajo!
+local ok_context, context = pcall(require, "treesitter_context")
 if ok_context then
   context.setup({
-    enable = true, -- Activar el plugin
-    max_lines = 4, -- Cuántas líneas fijadas como máximo arriba (para que no tape tu pantalla)
-    min_window_height = 0, -- Monitorear en cualquier tamaño de ventana
-    line_numbers = true, -- Muestra los números de línea reales del if/función arriba
-    multiline_threshold = 1, -- Si el header ocupa mucho, solo fija la primera línea
-    trim_scope = "outer", -- Descarta el exceso de scopes externos si pasa el max_lines
-    mode = "cursor", -- Sigue el contexto basado en dónde está tu cursor
+    enable = true,
+    max_lines = 4,
+    min_window_height = 0,
+    line_numbers = true,
+    multiline_threshold = 1,
+    trim_scope = "outer",
+    mode = "cursor",
+
+    -- 🛠️ FIX DEFINITIVO EN NEOVIM 0.12:
+    on_attach = function(buf)
+      -- Nueva sintaxis de API Neovim 0.10/0.11/0.12 para apagar diagnósticos por buffer
+      pcall(vim.diagnostic.enable, false, { bufnr = buf })
+      return true
+    end,
   })
 end
-
 -- =========================================================
 -- 🏷️ AUTO CLOSE TAG (Solo abre y cierra)
 -- =========================================================

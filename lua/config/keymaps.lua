@@ -1,6 +1,6 @@
 local map = vim.keymap.set
-local Snacks = require("snacks")
-local vite = require("plugins.live-server")
+local ok_snacks, Snacks = pcall(require, "snacks")
+local ok_vite, vite = pcall(require, "plugins.live-server")
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -260,7 +260,9 @@ nmap("<leader>uz", function()
 end, "Zen: Toggle Mode")
 
 -- --- SERVIDORES LOCALES (Live Server) --------------------
-nmap("<leader>us", vite.toggle_vite_server, "Vite: Toggle Server (Multi-project)")
+if ok_vite then
+  nmap("<leader>us", vite.toggle_vite_server, "Vite: Toggle Server (Multi-project)")
+end
 
 -- GIT (Lazygit & Gitsigns)
 nmap("<leader>gg", function()
@@ -387,33 +389,22 @@ end, "Format: File")
 nmap("K", function()
   local params = vim.lsp.util.make_position_params(0, "utf-16")
 
-  -- PASO 1: Usamos buf_request_all en lugar de buf_request para consultar
-  -- a TODOS los LSP activos en el buffer simultáneamente en una sola llamada.
   vim.lsp.buf_request_all(0, "textDocument/hover", params, function(responses)
     local combined_markdown = {}
 
-    -- PASO 2: Iteramos sobre las respuestas de cada servidor cliente adjunto
     for client_id, resp in pairs(responses or {}) do
       local client = vim.lsp.get_client_by_id(client_id)
-      local client_name = client and client.name or "LSP"
-
-      -- Verificar que el servidor no haya devuelto error y que contenga 'contents'
       if not resp.err and resp.result and resp.result.contents then
-        -- Convertir el formato del LSP a líneas markdown nativas
         local lines = vim.lsp.util.convert_input_to_markdown_lines(resp.result.contents)
 
-        -- Filtrar líneas vacías o compuestas puramente de espacios
         lines = vim.tbl_filter(function(line)
           return line and line:match("%S") ~= nil
         end, lines)
 
-        -- Si este LSP en particular sí tiene documentación válida, la acumulamos
         if not vim.tbl_isempty(lines) then
-          -- Opcional: Si hay más de un LSP activo con info, agregamos un encabezado para distinguir la fuente
           if #combined_markdown > 0 then
             table.insert(combined_markdown, "---")
           end
-
           for _, line in ipairs(lines) do
             table.insert(combined_markdown, line)
           end
@@ -421,21 +412,52 @@ nmap("K", function()
       end
     end
 
-    -- PASO 3: Evaluar si se encontró información útil de AL MENOS UN servidor.
-    -- Si ningún LSP devolvió información útil, emitimos UNA SOLA alerta global.
     if vim.tbl_isempty(combined_markdown) then
       vim.notify("No hay documentación disponible en esta posición", vim.log.levels.INFO)
       return
     end
 
-    -- PASO 4: Intentar renderizar la documentación combinada mediante Noice.nvim
+    -- =========================================================================
+    -- CÁLCULO DINÁMICO DE DIMENSIONES (Min/Max adaptativo a la pantalla)
+    -- =========================================================================
+    local screen_width = vim.o.columns
+    local screen_height = vim.o.lines
+
+    -- Definimos límites adaptativos
+    local min_width = 30 -- Ancho mínimo visible y compacto
+    local max_width = math.floor(screen_width * 0.6) -- Máximo 60% del ancho de pantalla
+    local max_height = math.floor(screen_height * 0.4) -- Máximo 40% del alto de pantalla
+
+    -- Calculamos la longitud real de la línea más larga para evitar espacios vacíos
+    local max_line_len = 0
+    for _, line in ipairs(combined_markdown) do
+      local len = vim.fn.strdisplaywidth(line)
+      if len > max_line_len then
+        max_line_len = len
+      end
+    end
+
+    -- Ancho ideal ajustado al contenido pero acotado entre min_width y max_width
+    local dynamic_width = math.max(min_width, math.min(max_line_len + 4, max_width))
+
+    -- PASO 4: Renderizado con Noice.nvim (forzando dimensiones dinámicas)
     local ok_noice, noice_handlers = pcall(require, "noice.lsp.handlers")
     if ok_noice and noice_handlers and noice_handlers.hover then
-      -- Reestructuramos un resultado sintético unificado para Noice
       local synthetic_result = {
         contents = combined_markdown,
       }
-      noice_handlers.hover(nil, synthetic_result, { method = "textDocument/hover" }, {})
+      noice_handlers.hover(nil, synthetic_result, {
+        method = "textDocument/hover",
+        opts = {
+          size = {
+            max_width = dynamic_width,
+            max_height = max_height,
+          },
+          win_options = {
+            wrap = true,
+          },
+        },
+      }, {})
       return
     end
 
@@ -443,12 +465,11 @@ nmap("K", function()
     local opts = {
       border = "rounded",
       focusable = true,
-      max_width = 80,
-      max_height = 20,
+      width = dynamic_width,
+      max_height = max_height,
+      wrap = true,
     }
 
-    -- Guardarraíl para garantizar que el cálculo de ancho dinámico de Neovim
-    -- nunca colapse a 0 provocando el crash 'Invalid width'
     if vim.lsp.util._make_floating_popup_size then
       local width, _ = vim.lsp.util._make_floating_popup_size(combined_markdown, opts)
       if width < 1 then
@@ -459,12 +480,94 @@ nmap("K", function()
     local bufnr, winnr = vim.lsp.util.open_floating_preview(combined_markdown, "markdown", opts)
 
     if winnr and vim.api.nvim_win_is_valid(winnr) then
-      -- Desactivar diagnósticos dentro de la ventana de vista previa flotante
       pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
     end
   end)
 end, "Universal Safe LSP Hover")
 
+nmap("K", function()
+  local params = vim.lsp.util.make_position_params(0, "utf-16")
+
+  vim.lsp.buf_request_all(0, "textDocument/hover", params, function(responses)
+    local combined_markdown = {}
+
+    for client_id, resp in pairs(responses or {}) do
+      if not resp.err and resp.result and resp.result.contents then
+        local lines = vim.lsp.util.convert_input_to_markdown_lines(resp.result.contents)
+
+        lines = vim.tbl_filter(function(line)
+          return line and line:match("%S") ~= nil
+        end, lines)
+
+        if not vim.tbl_isempty(lines) then
+          if #combined_markdown > 0 then
+            table.insert(combined_markdown, "---")
+          end
+          for _, line in ipairs(lines) do
+            table.insert(combined_markdown, line)
+          end
+        end
+      end
+    end
+
+    if vim.tbl_isempty(combined_markdown) then
+      vim.notify("No hay documentación disponible en esta posición", vim.log.levels.INFO)
+      return
+    end
+
+    -- =========================================================================
+    -- CÁLCULO DINÁMICO ADAPTATIVO
+    -- =========================================================================
+    local screen_width = vim.o.columns
+    local screen_height = vim.o.lines
+
+    -- Si hay más de 5 líneas, asumimos que es documentación detallada (Javadoc)
+    local is_long_doc = #combined_markdown > 5
+
+    -- Límites de ancho según el tipo de contenido
+    local min_width = 25
+    local max_width = is_long_doc and math.floor(screen_width * 0.55) or math.floor(screen_width * 0.40)
+    local max_height = is_long_doc and math.floor(screen_height * 0.45) or 15
+
+    local max_line_len = 0
+    for _, line in ipairs(combined_markdown) do
+      local clean_line = line:gsub("```%w*", ""):gsub("[%*`_]", "")
+      local len = vim.fn.strdisplaywidth(clean_line)
+
+      -- Solo capamos el cálculo de línea individual si supera el max_width actual
+      if len > max_width then
+        len = max_width
+      end
+
+      if len > max_line_len then
+        max_line_len = len
+      end
+    end
+
+    -- Ancho dinámico real ajustado con margen de padding
+    local final_width = math.max(min_width, math.min(max_line_len + 4, max_width))
+
+    local opts = {
+      border = "rounded",
+      focusable = true,
+      max_height = max_height,
+      wrap = true,
+    }
+
+    local bufnr, winnr = vim.lsp.util.open_floating_preview(combined_markdown, "markdown", opts)
+
+    if winnr and vim.api.nvim_win_is_valid(winnr) then
+      -- Aplicamos el ancho calculado a la geometría de la ventana
+      local config = vim.api.nvim_win_get_config(winnr)
+      config.width = final_width
+      vim.api.nvim_win_set_config(winnr, config)
+
+      pcall(vim.diagnostic.enable, false, { bufnr = bufnr })
+      vim.wo[winnr].number = false
+      vim.wo[winnr].relativenumber = false
+    end
+  end)
+end, "Universal Safe LSP Hover")
 nmap("gr", vim.lsp.buf.references, "LSP: References")
 nmap("GD", vim.diagnostic.open_float, "LSP: Show diagnostic float")
 nmap("GR", vim.diagnostic.setloclist, "LSP: Open Loclist")

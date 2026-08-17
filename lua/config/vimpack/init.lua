@@ -55,7 +55,7 @@ M.update = function()
               ui_manager.update_progress(ui, M.messages.install_success .. name)
               if plugin.build then
                 vim.schedule(function()
-                  vim.cmd(plugin.build)
+                  pcall(vim.cmd, plugin.build)
                 end)
               end
             else
@@ -73,7 +73,7 @@ M.update = function()
                 ui_manager.update_progress(ui, M.messages.update_success .. name)
                 if plugin.build then
                   vim.schedule(function()
-                    vim.cmd(plugin.build)
+                    pcall(vim.cmd, plugin.build)
                   end)
                 end
               else

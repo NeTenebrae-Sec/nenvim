@@ -2,12 +2,11 @@
 -- lua/plugins/snacks.lua
 -- Configuración modular, rápida y optimizada de snacks.nvim
 -- =========================================================
-Snacks = require("snacks")
-
 local status, snacks = pcall(require, "snacks")
 if not status then
   return
 end
+Snacks = snacks
 
 -----------------------------------------------------------
 -- OPCIONES DE HEADER / ASCII ART PARA EL DASHBOARD

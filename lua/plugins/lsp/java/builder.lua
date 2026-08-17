@@ -13,6 +13,7 @@ function M.build_cmd(params)
     "-Dosgi.bundles.defaultStartLevel=4",
     "-Declipse.product=org.eclipse.jdt.ls.core.product",
     "-Dlog.level=ERROR",
+    "-XX:+IgnoreUnrecognizedVMOptions", -- Ignora flags no soportados en versiones anteriores
     "-Xms256m",
     "-Xmx1g",
   }
