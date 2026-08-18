@@ -1,9 +1,16 @@
 local M = {}
 
-function M.refresh()
+--- Refresh JDTLS project configuration and rebuild workspace
+---@param opts table|nil options: { silent = boolean } - silent=true suppresses notification
+function M.refresh(opts)
+  opts = opts or {}
+  local silent = opts.silent == true
+
   local ok_jdtls, jdtls = pcall(require, "jdtls")
   if not ok_jdtls then
-    vim.notify("JDTLS is not active in this buffer", vim.log.levels.WARN, { title = "Java LSP" })
+    if not silent then
+      vim.notify("JDTLS is not active in this buffer", vim.log.levels.WARN, { title = "Java LSP" })
+    end
     return
   end
 
@@ -11,10 +18,10 @@ function M.refresh()
   pcall(jdtls.update_project_config)
 
   -- 2. Trigger workspace build RPC request
-  local clients = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })
+  local clients = vim.lsp.get_clients({ name = "jdtls" })
   if #clients > 0 then
     clients[1]:request("java/buildWorkspace", true, function(err, _)
-      if not err then
+      if not err and not silent then
         vim.notify("Workspace rebuilt successfully!", vim.log.levels.INFO, { title = "Java LSP" })
       end
     end)
@@ -29,7 +36,7 @@ end
 
 function M.setup()
   vim.api.nvim_create_user_command("JavaRefresh", function()
-    M.refresh()
+    M.refresh({ silent = false })
   end, {
     desc = "Refresh JDTLS project configuration and rebuild workspace index",
   })
