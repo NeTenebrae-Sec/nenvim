@@ -8,53 +8,53 @@ if not ok then
   return
 end
 
-ts.install({
-  ignore_install = { "tmux" },
+vim.schedule(function()
+  ts.install({
+    -- Base
+    "lua",
+    "vim",
+    "vimdoc",
+    "query",
+    "markdown",
+    "markdown_inline",
 
-  -- Base
-  "lua",
-  "vim",
-  "vimdoc",
-  "query",
-  "markdown",
-  "markdown_inline",
+    -- Shell / sistema
+    "bash",
+    "awk",
+    "make",
+    "cmake",
 
-  -- Shell / sistema
-  "bash",
-  "awk",
-  "make",
-  "cmake",
+    -- Lenguajes principales
+    "c",
+    "cpp",
+    "python",
+    "java",
 
-  -- Lenguajes principales
-  "c",
-  "cpp",
-  "python",
-  "java",
+    -- Web
+    "html",
+    "css",
+    "javascript",
+    "typescript",
+    "tsx",
+    "json",
+    "yaml",
+    "toml",
+    "scss",
+    "dockerfile",
+    "graphql",
+    "xml",
+    "svelte",
+    "vue",
+    "astro",
 
-  -- Web
-  "html",
-  "css",
-  "javascript",
-  "typescript",
-  "tsx",
-  "json",
-  "yaml",
-  "toml",
-  "scss",
-  "dockerfile",
-  "graphql",
-  "xml",
-  "svelte",
-  "vue",
-  "astro",
-
-  -- Otros útiles
-  "sql",
-  "regex",
-  "diff",
-  "gitignore",
-  "gitcommit",
-})
+    -- Otros útiles
+    "sql",
+    "regex",
+    "diff",
+    "gitignore",
+    "gitcommit",
+  }):raise_on_error()
+end)
 
 vim.api.nvim_create_autocmd("FileType", {
   callback = function(args)
