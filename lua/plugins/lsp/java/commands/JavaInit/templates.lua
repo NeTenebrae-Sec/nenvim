@@ -41,7 +41,7 @@ function M.create_pure_java_project(full_path, package_name, java_version)
     "<classpath>",
     '    <classpathentry kind="src" path="src"/>',
     '    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>',
-    '    <classpathentry kind="output" path="bin"/>',
+    '    <classpathentry kind="output" path="out"/>',
     "</classpath>",
   }
   vim.fn.writefile(classpath_content, full_path .. "/.classpath")
