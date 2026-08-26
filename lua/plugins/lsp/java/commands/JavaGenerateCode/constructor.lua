@@ -66,7 +66,8 @@ function M.handle(jdtls_client, target_buf, encoding)
             return
           end
 
-          for _, field in ipairs(fields) do
+          for i = #fields, 1, -1 do
+            local field = fields[i]
             if choice:find(field.name, 1, true) then
               local key = field.bindingKey or field.name
               selected_fields_map[key] = not selected_fields_map[key]
