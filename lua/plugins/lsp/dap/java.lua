@@ -138,14 +138,14 @@ local function detect_build_environment(root, src_dir)
   local has_pom_file = vim.fn.filereadable(root .. "/pom.xml") == 1
 
   local gradle_exec = nil
-  if has_gradlew then
+  if has_gradlew and vim.fn.executable(root .. "/gradlew") == 1 then
     gradle_exec = "./gradlew"
   elseif has_gradle_file and vim.fn.executable("gradle") == 1 then
     gradle_exec = "gradle"
   end
 
   local maven_exec = nil
-  if has_mvnw then
+  if has_mvnw and vim.fn.executable(root .. "/mvnw") == 1 then
     maven_exec = "./mvnw"
   elseif has_pom_file and vim.fn.executable("mvn") == 1 then
     maven_exec = "mvn"
