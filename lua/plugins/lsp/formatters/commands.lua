@@ -11,6 +11,7 @@ local modules = {
   javascript = require("plugins.lsp.formatters.javascript"),
   markdown = require("plugins.lsp.formatters.markdown"),
   shell = require("plugins.lsp.formatters.shell"),
+  sql = require("plugins.lsp.formatters.sql"),
 }
 
 -- 2. DYNAMIC FILETYPE -> MODULE MAPPING
@@ -113,6 +114,31 @@ function M.setup()
             vim.cmd("checktime")
           else
             vim.notify("Prettier error: " .. (out.stderr or ""), vim.log.levels.ERROR)
+          end
+        end)
+      end)
+      return
+    end
+
+    -- CASE 4: SQL (sqlfluff)
+    -- NOTA: sqlfluff 4.x no requiere --force (deprecated desde v3.0).
+    -- Exit code 0 = todo OK, 1 = formateo aplicado con violaciones no fixables.
+    if ft == "sql" then
+      vim.notify("Formatting SQL files with sqlfluff...", vim.log.levels.INFO)
+
+      local cmd = { "sqlfluff", "fix" }
+      for _, arg in ipairs(mod.get_cli_args(root)) do
+        table.insert(cmd, arg)
+      end
+      table.insert(cmd, ".")
+
+      vim.system(cmd, { cwd = root }, function(out)
+        vim.schedule(function()
+          if out.code == 0 or out.code == 1 then
+            vim.notify("SQL files formatted successfully!", vim.log.levels.INFO)
+            vim.cmd("checktime")
+          else
+            vim.notify("sqlfluff error: " .. (out.stderr or ""), vim.log.levels.ERROR)
           end
         end)
       end)

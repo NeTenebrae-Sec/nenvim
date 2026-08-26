@@ -16,6 +16,7 @@ local modules = {
   "plugins.lsp.formatters.markdown",
   "plugins.lsp.formatters.lua",
   "plugins.lsp.formatters.shell",
+  "plugins.lsp.formatters.sql",
   "plugins.lsp.formatters.generic",
 }
 
@@ -41,7 +42,7 @@ conform.setup({
   formatters_by_ft = combined_formatters_by_ft,
   formatters = combined_formatters,
   format_on_save = {
-    timeout_ms = 2000,
+    timeout_ms = 5000,
     lsp_format = "fallback",
   },
 })

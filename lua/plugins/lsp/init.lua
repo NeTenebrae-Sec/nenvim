@@ -63,6 +63,7 @@ local servers = {
   "c",
   "markdown",
   "html_css",
+  "sql",
 }
 
 for _, server in ipairs(servers) do
