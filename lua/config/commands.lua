@@ -308,3 +308,183 @@ end
 
 -- Command :Profile
 vim.api.nvim_create_user_command("Profile", generate_performance_report, {})
+
+-- ============================================================================
+-- GITIGNORE CREATOR
+-- ============================================================================
+
+local function create_gitignore()
+  local LOGTITLE = "GitIgnore"
+  local project_root = vim.fn.getcwd()
+
+  -- Detect git project root
+  local git_root = vim.fn.systemlist("git rev-parse --show-toplevel 2>/dev/null")[1]
+  if git_root and git_root ~= "" and vim.fn.isdirectory(git_root) == 1 then
+    project_root = git_root
+  else
+    vim.notify("Not in a git repo. Using cwd: " .. project_root, vim.log.levels.WARN, { title = LOGTITLE })
+  end
+
+  local gitignore_path = project_root .. "/.gitignore"
+
+  -- Read existing .gitignore entries to avoid duplicates
+  local existing_entries = {}
+  if vim.fn.filereadable(gitignore_path) == 1 then
+    for _, line in ipairs(vim.fn.readfile(gitignore_path)) do
+      line = line:gsub("^%s*(.-)%s*$", "%1")
+      if line ~= "" and not line:match("^#") and not line:match("^!") then
+        existing_entries[line] = true
+      end
+    end
+  end
+
+  -- Common ignore patterns
+  local COMMON_PATTERNS = {
+    { entry = "node_modules/", display = "node_modules/" },
+    { entry = "*.log", display = "*.log" },
+    { entry = ".env", display = ".env" },
+    { entry = "target/", display = "target/" },
+    { entry = ".gradle/", display = ".gradle/" },
+    { entry = ".mvn/", display = ".mvn/" },
+    { entry = "__pycache__/", display = "__pycache__/" },
+    { entry = "*.pyc", display = "*.pyc" },
+    { entry = ".venv/", display = ".venv/" },
+    { entry = "dist/", display = "dist/" },
+    { entry = "build/", display = "build/" },
+    { entry = ".DS_Store", display = ".DS_Store" },
+    { entry = "Thumbs.db", display = "Thumbs.db" },
+    { entry = "*.swp", display = "*.swp" },
+    { entry = "*.swo", display = "*.swo" },
+    { entry = ".idea/", display = ".idea/" },
+    { entry = ".vscode/", display = ".vscode/" },
+    { entry = "*.class", display = "*.class" },
+    { entry = ".next/", display = ".next/" },
+    { entry = "coverage/", display = "coverage/" },
+    { entry = "*.tmp", display = "*.tmp" },
+    { entry = "*.bak", display = "*.bak" },
+  }
+
+  -- Gather root-level untracked entries from git
+  local untracked_entries = {}
+  if vim.fn.executable("git") == 1 then
+    local output = vim.fn.systemlist(
+      "git -C " .. vim.fn.shellescape(project_root) .. " ls-files --others --exclude-standard 2>/dev/null"
+    )
+    if vim.v.shell_error == 0 and output then
+      local seen = {}
+      for _, path in ipairs(output) do
+        local first = path:match("^[^/]+")
+        if first and first ~= ".gitignore" and not seen[first] then
+          seen[first] = true
+          local entry = first
+          if vim.fn.isdirectory(project_root .. "/" .. first) == 1 then
+            entry = first .. "/"
+          end
+          if not existing_entries[entry] and not existing_entries[first] then
+            table.insert(untracked_entries, { entry = entry, display = first })
+          end
+        end
+      end
+    end
+  end
+
+  -- Combine candidates: common patterns first, then untracked entries, with uniqueness check
+  local items = {}
+  local display_seen = {}
+  for _, p in ipairs(COMMON_PATTERNS) do
+    if not existing_entries[p.entry] and not display_seen[p.display] then
+      table.insert(items, p)
+      display_seen[p.display] = true
+    end
+  end
+  for _, e in ipairs(untracked_entries) do
+    if not display_seen[e.display] then
+      table.insert(items, e)
+      display_seen[e.display] = true
+    end
+  end
+
+  if #items == 0 then
+    vim.notify(".gitignore is up to date. No candidates to add.", vim.log.levels.INFO, { title = LOGTITLE })
+    return
+  end
+
+  -- Toggle-select UI (follows the same pattern as JavaAddDependencies/ui.lua:toggle_select)
+  local selected = {}
+
+  local function show()
+    local options = { "=== [ CONFIRM GITIGNORE ENTRIES ] ===" }
+    for _, item in ipairs(items) do
+      local mark = selected[item.display] and "[X]" or "[ ]"
+      table.insert(options, mark .. " " .. item.display)
+    end
+
+    vim.ui.select(options, {
+      prompt = "Select entries for .gitignore (top line confirms): ",
+    }, function(choice)
+      if not choice then
+        return
+      end
+
+      if choice:find("CONFIRM GITIGNORE ENTRIES") then
+        local chosen = {}
+        for _, item in ipairs(items) do
+          if selected[item.display] then
+            table.insert(chosen, item.entry)
+          end
+        end
+
+        if #chosen == 0 then
+          vim.notify("No entries selected.", vim.log.levels.INFO, { title = LOGTITLE })
+          return
+        end
+
+        -- Build .gitignore content
+        local lines = {}
+        if vim.fn.filereadable(gitignore_path) == 1 then
+          lines = vim.fn.readfile(gitignore_path)
+          if #lines > 0 and lines[#lines] ~= "" then
+            table.insert(lines, "")
+          end
+        else
+          table.insert(lines, "# .gitignore")
+          table.insert(lines, "")
+        end
+
+        for _, entry in ipairs(chosen) do
+          table.insert(lines, entry)
+        end
+
+        vim.fn.writefile(lines, gitignore_path)
+        vim.notify(
+          string.format("Updated .gitignore with %d entries at: %s", #chosen, gitignore_path),
+          vim.log.levels.INFO,
+          { title = LOGTITLE }
+        )
+
+        vim.cmd("edit " .. vim.fn.fnameescape(gitignore_path))
+        return
+      end
+
+      -- Toggle selection for clicked item
+      for _, item in ipairs(items) do
+        if choice:find(item.display, 1, true) then
+          selected[item.display] = not selected[item.display]
+          show()
+          return
+        end
+      end
+
+      show()
+    end)
+  end
+
+  show()
+end
+
+-- Command :GitIgnore
+vim.api.nvim_create_user_command("GitIgnore", create_gitignore, {
+  desc = "Create/append .gitignore interactively at project root",
+})
+
+-- :SqlInit eliminado -> ahora en plugins/lsp/servers/sql.lua
