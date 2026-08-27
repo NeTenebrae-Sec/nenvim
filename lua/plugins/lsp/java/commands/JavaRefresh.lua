@@ -14,20 +14,22 @@ function M.refresh(opts)
     return
   end
 
-  -- 1. Force JDTLS to update project configurations (pom.xml / build.gradle)
-  pcall(jdtls.update_project_config)
-
-  -- 2. Trigger workspace build RPC request
   local clients = vim.lsp.get_clients({ name = "jdtls" })
-  if #clients > 0 then
-    clients[1]:request("java/buildWorkspace", true, function(err, _)
-      if not err and not silent then
-        vim.notify("Workspace rebuilt successfully!", vim.log.levels.INFO, { title = "Java LSP" })
-      end
-    end)
+  if #clients == 0 then
+    if not silent then
+      vim.notify("No JDTLS client attached to current buffer", vim.log.levels.WARN, { title = "Java LSP" })
+    end
+    return
   end
 
-  -- 3. Touch current buffer to force diagnostics re-evaluation
+  pcall(jdtls.update_project_config)
+
+  clients[1]:request("java/buildWorkspace", true, function(err, _)
+    if not err and not silent then
+      vim.notify("Workspace rebuilt successfully!", vim.log.levels.INFO, { title = "Java LSP" })
+    end
+  end)
+
   local current_buf = vim.api.nvim_get_current_buf()
   if vim.bo[current_buf].filetype == "java" then
     vim.cmd("silent! write")
