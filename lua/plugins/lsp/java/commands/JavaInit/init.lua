@@ -54,8 +54,9 @@ function M.create_project()
           return
         end
 
-        local function finalize_project(dependencies, packaging)
+        local function finalize_project(dependencies, packaging, boot_version)
           packaging = packaging or "jar"
+          boot_version = boot_version or "4.1.1"
 
           -- === PASO 1: DIRECTORIO OBJETIVO ===
           local function prompt_target_dir()
@@ -144,8 +145,9 @@ function M.create_project()
                       end
 
                       local url = string.format(
-                        "https://start.spring.io/starter.tgz?type=%s&groupId=%s&artifactId=%s&name=%s&packageName=%s&javaVersion=%s&packaging=%s",
+                        "https://start.spring.io/starter.tgz?type=%s&bootVersion=%s&groupId=%s&artifactId=%s&name=%s&packageName=%s&javaVersion=%s&packaging=%s",
                         build_tool,
+                        boot_version,
                         group_id,
                         project_name,
                         project_name,
@@ -159,23 +161,64 @@ function M.create_project()
                       end
 
                       vim.notify("Downloading Spring Boot template...", vim.log.levels.INFO)
-                      local cmd = string.format(
-                        "curl -sL %s | tar -xzvf - -C %s",
-                        vim.fn.shellescape(url),
-                        vim.fn.shellescape(full_path)
+                      local tmpfile = vim.fn.tempname() .. ".tgz"
+
+                      local curl_cmd = string.format(
+                        "curl -sL -o %s -w '%%{http_code}' %s",
+                        vim.fn.shellescape(tmpfile),
+                        vim.fn.shellescape(url)
                       )
 
-                      vim.fn.jobstart(cmd, {
-                        on_exit = function(_, exit_code)
-                          if exit_code == 0 then
-                            vim.cmd("cd " .. vim.fn.fnameescape(full_path))
-                            local main_files = vim.fn.glob(full_path .. "/src/main/java/**/*.java", false, true)
-                            if #main_files > 0 then
-                              vim.cmd("edit " .. vim.fn.fnameescape(main_files[1]))
+                      vim.fn.jobstart(curl_cmd, {
+                        stdout_buffered = true,
+                        on_stdout = function(_, data)
+                          local http_code = data and data[1] or "000"
+
+                          if http_code ~= "200" then
+                            local err_content = ""
+                            if vim.fn.filereadable(tmpfile) == 1 then
+                              local lines = vim.fn.readfile(tmpfile)
+                              err_content = table.concat(lines, "")
+                              -- Try to extract error message from JSON
+                              local ok, parsed = pcall(vim.json.decode, err_content)
+                              if ok and parsed and parsed.message then
+                                err_content = parsed.message
+                              end
                             end
-                            vim.notify("Spring Boot project initialized successfully!", vim.log.levels.INFO)
-                          else
-                            vim.notify("Failed to download or extract project template.", vim.log.levels.ERROR)
+                            os.remove(tmpfile)
+                            vim.notify(
+                              "Spring Initializr error (HTTP " .. http_code .. "): " .. err_content,
+                              vim.log.levels.ERROR
+                            )
+                            return
+                          end
+
+                          local tar_cmd = string.format(
+                            "tar -xzf %s -C %s",
+                            vim.fn.shellescape(tmpfile),
+                            vim.fn.shellescape(full_path)
+                          )
+
+                          vim.fn.jobstart(tar_cmd, {
+                            on_exit = function(_, tar_exit)
+                              os.remove(tmpfile)
+                              if tar_exit == 0 then
+                                vim.cmd("cd " .. vim.fn.fnameescape(full_path))
+                                local main_files = vim.fn.glob(full_path .. "/src/main/java/**/*.java", false, true)
+                                if #main_files > 0 then
+                                  vim.cmd("edit " .. vim.fn.fnameescape(main_files[1]))
+                                end
+                                vim.notify("Spring Boot project initialized successfully!", vim.log.levels.INFO)
+                              else
+                                vim.notify("Failed to extract project template.", vim.log.levels.ERROR)
+                              end
+                            end,
+                          })
+                        end,
+                        on_exit = function(_, exit_code)
+                          if exit_code ~= 0 then
+                            os.remove(tmpfile)
+                            vim.notify("Failed to download from Spring Initializr. Check your connection.", vim.log.levels.ERROR)
                           end
                         end,
                       })
@@ -194,9 +237,11 @@ function M.create_project()
         end
 
         if is_spring then
-          spring_ui.select_dependencies(function(deps)
-            vim.ui.select({ "jar", "war" }, { prompt = "Select Packaging Type:" }, function(pkg)
-              finalize_project(deps, pkg or "jar")
+          spring_ui.select_boot_version(function(boot_version)
+            spring_ui.select_dependencies(function(deps)
+              vim.ui.select({ "jar", "war" }, { prompt = "Select Packaging Type:" }, function(pkg)
+                finalize_project(deps, pkg or "jar", boot_version)
+              end)
             end)
           end)
         else
