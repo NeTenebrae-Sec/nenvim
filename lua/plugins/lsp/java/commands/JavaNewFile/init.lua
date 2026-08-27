@@ -8,19 +8,57 @@ local FILE_TYPES = {
   { label = "Annotation", template = "annotation" },
 }
 
---- Deduce el paquete relativo escaneando la ruta actual
-local function detect_package_name(current_dir)
-  local path = current_dir:gsub("\\", "/")
+--- Busca la raíz del proyecto buscando archivos de build
+local function find_project_root(start_dir)
+  local dir = start_dir
+  while dir ~= "/" do
+    if
+      vim.fn.filereadable(dir .. "/pom.xml") == 1
+      or vim.fn.filereadable(dir .. "/build.gradle") == 1
+      or vim.fn.filereadable(dir .. "/build.gradle.kts") == 1
+    then
+      return dir
+    end
+    dir = vim.fn.fnamemodify(dir, ":h")
+  end
+  return start_dir
+end
 
-  -- Soporte para código fuente principal y de pruebas
-  local match_main = path:match("src/main/java/(.+)$")
-  local match_test = path:match("src/test/java/(.+)$")
-  local match_pure = path:match("src/(.+)$")
+--- Detecta qué source roots están disponibles en el proyecto
+local function detect_source_roots(project_root)
+  local roots = {}
+  local candidates = {
+    { label = "src/main/java", path = project_root .. "/src/main/java" },
+    { label = "src/test/java", path = project_root .. "/src/test/java" },
+    { label = "src", path = project_root .. "/src" },
+  }
+  for _, item in ipairs(candidates) do
+    if vim.fn.isdirectory(item.path) == 1 then
+      table.insert(roots, item)
+    end
+  end
+  return roots
+end
 
-  local rel_path = match_main or match_test or match_pure
+--- Detecta el paquete relativo a un source root específico
+local function detect_package_from_root(source_root)
+  local current_buf = vim.api.nvim_buf_get_name(0)
+  local cwd = ""
 
-  if rel_path and rel_path ~= "" then
-    return rel_path:gsub("/", ".")
+  if current_buf ~= "" then
+    cwd = vim.fn.fnamemodify(current_buf, ":p:h")
+  else
+    cwd = vim.fn.getcwd()
+  end
+
+  local path = cwd:gsub("\\", "/")
+  local root_path = source_root:gsub("\\", "/")
+
+  if path:sub(1, #root_path) == root_path then
+    local rel = path:sub(#root_path + 2)
+    if rel ~= "" then
+      return rel:gsub("/", ".")
+    end
   end
 
   return ""
@@ -36,7 +74,13 @@ function M.create_file()
     cwd = vim.fn.getcwd()
   end
 
-  local detected_package = detect_package_name(cwd)
+  local project_root = find_project_root(cwd)
+  local source_roots = detect_source_roots(project_root)
+
+  if #source_roots == 0 then
+    vim.notify("No source root found (src/ or src/main/java/)", vim.log.levels.ERROR)
+    return
+  end
 
   vim.ui.select(FILE_TYPES, {
     prompt = "Select Java Type:",
@@ -55,79 +99,93 @@ function M.create_file()
         return
       end
 
-      -- Limpia extensión e espacios accidentales
       file_name = file_name:gsub("%.java$", ""):gsub("%s+", "")
 
-      vim.ui.input({
-        prompt = "Package: ",
-        default = detected_package,
-      }, function(pkg_name)
-        pkg_name = pkg_name or ""
-        pkg_name = pkg_name:gsub("^%s*(.-)%s*$", "%1") -- trim
+      local function ask_package(source_root)
+        local detected = detect_package_from_root(source_root)
 
-        local target_dir = cwd
+        vim.ui.input({
+          prompt = "Package: ",
+          default = detected,
+        }, function(pkg_name)
+          pkg_name = pkg_name or ""
+          pkg_name = pkg_name:gsub("^%s*(.-)%s*$", "%1")
 
-        -- Si el usuario cambia el paquete a uno distinto, recalculamos la ruta base
-        if pkg_name ~= "" and detected_package ~= "" and pkg_name ~= detected_package then
-          local base_src = cwd:sub(1, #cwd - #detected_package:gsub("%.", "/"))
-          target_dir = base_src .. pkg_name:gsub("%.", "/")
-        end
+          local target_dir = source_root
+          if pkg_name ~= "" then
+            target_dir = source_root .. "/" .. pkg_name:gsub("%.", "/")
+          end
 
-        -- Garantiza que las carpetas destino existan
-        if vim.fn.isdirectory(target_dir) == 0 then
-          vim.fn.mkdir(target_dir, "p")
-        end
+          if vim.fn.isdirectory(target_dir) == 0 then
+            vim.fn.mkdir(target_dir, "p")
+          end
 
-        local target_file = target_dir .. "/" .. file_name .. ".java"
+          local target_file = target_dir .. "/" .. file_name .. ".java"
 
-        if vim.fn.filereadable(target_file) == 1 then
-          vim.notify("File already exists: " .. target_file, vim.log.levels.ERROR)
-          return
-        end
+          if vim.fn.filereadable(target_file) == 1 then
+            vim.notify("File already exists: " .. target_file, vim.log.levels.ERROR)
+            return
+          end
 
-        local lines = {}
-        if pkg_name ~= "" then
-          table.insert(lines, "package " .. pkg_name .. ";")
-          table.insert(lines, "")
-        end
+          local lines = {}
+          if pkg_name ~= "" then
+            table.insert(lines, "package " .. pkg_name .. ";")
+            table.insert(lines, "")
+          end
 
-        local kind = selected_type.template
-        if kind == "class" then
-          table.insert(lines, string.format("public class %s {", file_name))
-          table.insert(lines, "    ")
-          table.insert(lines, "}")
-        elseif kind == "interface" then
-          table.insert(lines, string.format("public interface %s {", file_name))
-          table.insert(lines, "    ")
-          table.insert(lines, "}")
-        elseif kind == "enum" then
-          table.insert(lines, string.format("public enum %s {", file_name))
-          table.insert(lines, "    ")
-          table.insert(lines, "}")
-        elseif kind == "record" then
-          table.insert(lines, string.format("public record %s() {", file_name))
-          table.insert(lines, "}")
-        elseif kind == "annotation" then
-          table.insert(lines, string.format("public @interface %s {", file_name))
-          table.insert(lines, "    ")
-          table.insert(lines, "}")
-        end
+          local kind = selected_type.template
+          if kind == "class" then
+            table.insert(lines, string.format("public class %s {", file_name))
+            table.insert(lines, "    ")
+            table.insert(lines, "}")
+          elseif kind == "interface" then
+            table.insert(lines, string.format("public interface %s {", file_name))
+            table.insert(lines, "    ")
+            table.insert(lines, "}")
+          elseif kind == "enum" then
+            table.insert(lines, string.format("public enum %s {", file_name))
+            table.insert(lines, "    ")
+            table.insert(lines, "}")
+          elseif kind == "record" then
+            table.insert(lines, string.format("public record %s() {", file_name))
+            table.insert(lines, "}")
+          elseif kind == "annotation" then
+            table.insert(lines, string.format("public @interface %s {", file_name))
+            table.insert(lines, "    ")
+            table.insert(lines, "}")
+          end
 
-        vim.fn.writefile(lines, target_file)
-        vim.cmd("edit " .. vim.fn.fnameescape(target_file))
+          vim.fn.writefile(lines, target_file)
+          vim.cmd("edit " .. vim.fn.fnameescape(target_file))
 
-        -- Posicionamiento inteligente del cursor
-        if kind == "record" then
-          local record_line = pkg_name ~= "" and 3 or 1
-          local col = #string.format("public record %s(", file_name)
-          vim.api.nvim_win_set_cursor(0, { record_line, col })
-        else
-          local body_line = pkg_name ~= "" and 4 or 2
-          vim.api.nvim_win_set_cursor(0, { body_line, 4 })
-        end
+          if kind == "record" then
+            local record_line = pkg_name ~= "" and 3 or 1
+            local col = #string.format("public record %s(", file_name)
+            vim.api.nvim_win_set_cursor(0, { record_line, col })
+          else
+            local body_line = pkg_name ~= "" and 4 or 2
+            vim.api.nvim_win_set_cursor(0, { body_line, 4 })
+          end
 
-        vim.notify("Created " .. selected_type.label .. ": " .. file_name .. ".java", vim.log.levels.INFO)
-      end)
+          vim.notify("Created " .. selected_type.label .. ": " .. file_name .. ".java", vim.log.levels.INFO)
+        end)
+      end
+
+      if #source_roots == 1 then
+        ask_package(source_roots[1].path)
+      else
+        vim.ui.select(source_roots, {
+          prompt = "Source Root:",
+          format_item = function(item)
+            return item.label
+          end,
+        }, function(selected_root)
+          if not selected_root then
+            return
+          end
+          ask_package(selected_root.path)
+        end)
+      end
     end)
   end)
 end
