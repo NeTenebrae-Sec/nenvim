@@ -103,7 +103,7 @@ dap_lib.listeners.after.event_exited["debugger_notify"] = reset_notify
 -- ===============================
 local mason_path = vim.fn.stdpath("data") .. "/mason"
 
-local configs = { "js", "python", "bash", "c", "java" }
+local configs = { "js", "python", "bash", "c", "java", "astro" }
 for _, config in ipairs(configs) do
   local ok, module = pcall(require, "plugins.lsp.dap." .. config)
   if ok and type(module.setup) == "function" then

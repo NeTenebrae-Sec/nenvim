@@ -67,6 +67,6 @@ if ok_mti then
       "vscode-spring-boot-tools",
     },
     run_on_start = true,
-    auto_update = true,
+    auto_update = false,
   })
 end

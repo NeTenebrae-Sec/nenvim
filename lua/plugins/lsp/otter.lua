@@ -16,7 +16,7 @@ otter.setup({
 -- Mapeo de filetypes e idiomas inyectados
 local injected_languages = {
   html = { "javascript", "css" },
-  astro = { "typescript", "javascript", "css" },
+  -- astro: fuera — astro-ls ya maneja lo embebido; otter duplicaba diagnósticos TS (spec 001 §C)
   svelte = { "typescript", "javascript", "css" },
   vue = { "typescript", "javascript", "css" },
   markdown = { "javascript", "typescript", "css", "python", "bash", "json" },

@@ -1,6 +1,9 @@
 -- =========================================================
--- Professional Vite Integration (Multi-project)
+-- Web server multi-proyecto (<leader>us): vite o astro dev
 -- =========================================================
+
+-- Local directory to install vite (avoids needing global install or internet)
+local VITE_DIR = vim.fn.stdpath("data") .. "/vite-server"
 
 -- Starting port to search from
 local BASE_PORT = 8181
@@ -8,13 +11,36 @@ local BASE_PORT = 8181
 -- Global in-memory table to track servers by project directory
 _G.vite_active_servers = _G.vite_active_servers or {}
 
--- Find the vite binary: first try PATH, then fallback to npx (no global install needed)
+-- Find the vite binary: PATH → local dir → auto-install → npx fallback
 local function find_vite()
+  -- 1. Check if vite is in PATH (global install)
   local path = vim.fn.exepath("vite")
   if path ~= "" then
     return path
   end
-  -- Use npx vite as fallback - runs without global install
+
+  -- 2. Check local installation directory
+  local local_bin = VITE_DIR .. "/node_modules/.bin/vite"
+  if vim.fn.filereadable(local_bin) == 1 then
+    return local_bin
+  end
+
+  -- 3. Auto-install vite locally (one-time, ~20MB)
+  vim.notify("Vite not found. Installing locally to " .. VITE_DIR .. "...", vim.log.levels.INFO)
+  local install_cmd = string.format("npm install --prefix '%s' vite", VITE_DIR)
+  local result = vim.fn.system(install_cmd)
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Failed to install Vite locally. Falling back to npx.", vim.log.levels.WARN)
+    return "npx vite"
+  end
+
+  -- 4. Re-check after install
+  if vim.fn.filereadable(local_bin) == 1 then
+    vim.notify("Vite installed successfully!", vim.log.levels.INFO)
+    return local_bin
+  end
+
+  -- 5. Last resort: npx (needs internet)
   return "npx vite"
 end
 
@@ -59,7 +85,25 @@ local function get_intelligent_project_root()
   return current_dir
 end
 
--- Internal function to start the Vite dev server
+-- Astro 7: el CLI puede morir dejando un daemon vivo o quedarse como job
+-- foreground — el estado es por proyecto/puerto, y el stop cubre ambos casos.
+local function stop_server(project_root, server)
+  local alive = server.job_id and vim.fn.jobwait({ server.job_id }, 0)[1] == -1
+
+  if server.framework == "astro" then
+    vim.fn.jobstart({ project_root .. "/node_modules/.bin/astro", "dev", "stop" }, { cwd = project_root })
+    if alive then
+      vim.fn.jobstop(server.job_id)
+    end
+  elseif alive then
+    vim.fn.jobstop(server.job_id)
+  end
+
+  _G.vite_active_servers[project_root] = nil
+  vim.notify("Web: servidor detenido (" .. vim.fn.fnamemodify(project_root, ":t") .. ")", vim.log.levels.INFO)
+end
+
+-- Internal function to start the dev server (vite o astro)
 local function start_server(project_root)
   local file_path = vim.api.nvim_buf_get_name(0)
   local file_ext = vim.fn.expand("%:e")
@@ -79,94 +123,86 @@ local function start_server(project_root)
     end
   end
 
-  -- Find a free port for this project
-  local project_port = get_available_port()
-  local vite_cmd = find_vite()
+  -- Astro: vite no entiende .astro → usar el dev server local del proyecto
+  local astro_bin = project_root .. "/node_modules/.bin/astro"
+  local is_astro = vim.fn.filereadable(astro_bin) == 1 and vim.fn.glob(project_root .. "/astro.config.*") ~= ""
+  local framework = is_astro and "astro" or "vite"
 
-  -- Run vite dev pointing to the detected project root
-  local cmd = string.format("%s dev --port %s --force '%s'", vite_cmd, project_port, project_root)
+  -- Astro 7: sin root posicional (es el subcommand stop/status/logs) → cwd = root;
+  -- sin --port: respeta su puerto por defecto/config (4321 en neteumbra).
+  -- El puerto real se extrae del output, nunca del estimado.
+  local cmd
+  if is_astro then
+    cmd = string.format("'%s' dev", astro_bin)
+  else
+    cmd = string.format("%s dev --port %s --force", find_vite(), get_available_port())
+  end
 
-  local job_id = vim.fn.jobstart({ "zsh", "-c", cmd }, {
-    on_stdout = function(_, data)
-      if not data then
-        return
+  local output_buf = "" -- acumula stdout+stderr: una URL no debe partirse entre chunks
+  local opened = false
+  local job_id -- declarado antes: on_output compara contra él para ignorar jobs viejos
+
+  local function on_output(_, data) -- firma jobstart: (job_id, data, event)
+    if not data then
+      return
+    end
+    output_buf = output_buf .. table.concat(data, "\n") .. "\n"
+
+    local entry = _G.vite_active_servers[project_root]
+    if opened or not entry or entry.job_id ~= job_id then
+      return
+    end
+
+    -- Cubre los 3 mensajes de astro (arranque, "already running", throw con URL) y vite "Local:"
+    local port = output_buf:match("http://localhost:(%d+)")
+    if not port then
+      return
+    end
+
+    opened = true
+    entry.port = port
+    vim.schedule(function()
+      vim.fn.system("xdg-open 'http://localhost:" .. port .. target_page .. "' &")
+      vim.notify("Web: sirviendo en http://localhost:" .. port .. " (" .. framework .. ")", vim.log.levels.INFO)
+    end)
+  end
+
+  job_id = vim.fn.jobstart({ "zsh", "-c", cmd }, {
+    cwd = project_root,
+    on_stdout = on_output,
+    on_stderr = on_output,
+    on_exit = function(_, code) -- firma jobstart: (job_id, exit_code, event)
+      local entry = _G.vite_active_servers[project_root]
+      if not entry or entry.job_id ~= job_id then
+        return -- stop explícito desde esta misma config, u otro start más reciente
       end
-      local output = table.concat(data, "\n")
-
-      if output:find("Local:") or output:find("http://localhost:" .. project_port) then
+      if framework == "astro" and opened then
+        return -- URL parseada = server viva (daemon propio o externo adoptado)
+      end
+      _G.vite_active_servers[project_root] = nil
+      if code ~= 0 then
         vim.schedule(function()
-          local full_url = "http://localhost:" .. project_port .. target_page
-          vim.notify(
-            "Vite [" .. vim.fn.fnamemodify(project_root, ":t") .. "] ready at " .. full_url,
-            vim.log.levels.INFO
-          )
-          vim.fn.system("xdg-open " .. full_url .. " &")
+          vim.notify("Web: el server terminó con error (código " .. code .. ")", vim.log.levels.ERROR)
         end)
       end
     end,
-
-    on_stderr = function(_, data)
-      if not data then
-        return
-      end
-      for _, line in ipairs(data) do
-        local cleaned = line:gsub("%s+", "")
-        if cleaned ~= ""
-          and not cleaned:find("can'tsettty")
-          and not cleaned:find("Failedtorundependencyscan")
-          and not cleaned:find("Thefollowingdependenciesareimported")
-          and not cleaned:find("npmwarn")
-          and not cleaned:find("npmERR")
-          and not cleaned:find("npmnotice")
-          and not cleaned:find("zle")
-          and not cleaned:find("can'tchangeoption")
-        then
-          vim.schedule(function()
-            vim.notify("Vite Error: " .. line, vim.log.levels.ERROR)
-          end)
-        end
-      end
-    end,
-
-    on_exit = function()
-      _G.vite_active_servers[project_root] = nil
-    end,
   })
 
-  -- Store server data for statusline and toggles
-  _G.vite_active_servers[project_root] = { job_id = job_id, port = project_port }
-  vim.notify(
-    "Starting Vite on port " .. project_port .. " for " .. vim.fn.fnamemodify(project_root, ":t") .. "...",
-    vim.log.levels.INFO
-  )
+  -- Estado síncrono: el toggle y lualine lo ven antes de que llegue el output
+  _G.vite_active_servers[project_root] = { job_id = job_id, framework = framework }
 end
 
 -- Main toggle function (multi-project smart toggle)
 local function toggle_vite_server()
-  -- If the current buffer is not modifiable (e.g. NvimTree, Telescope),
-  -- try to use the current working directory to handle stop/start without issues.
-  if not vim.opt_local.modifiable:get() then
-    local project_root = vim.fn.getcwd()
-    if _G.vite_active_servers[project_root] then
-      vim.fn.jobstop(_G.vite_active_servers[project_root].job_id)
-      _G.vite_active_servers[project_root] = nil
-      vim.notify("Vite Server stopped", vim.log.levels.INFO)
-      return
-    end
+  -- Desde buffers no-editables (dashboard, terminal) el contexto es el cwd
+  local project_root = vim.opt_local.modifiable:get() and get_intelligent_project_root() or vim.fn.getcwd()
+
+  local server = _G.vite_active_servers[project_root]
+  if server then
+    stop_server(project_root, server)
+  else
+    start_server(project_root)
   end
-
-  -- Detect the smart project root from the current file or working directory
-  local project_root = get_intelligent_project_root()
-
-  -- If this project already has a running server, stop it
-  if _G.vite_active_servers[project_root] then
-    vim.fn.jobstop(_G.vite_active_servers[project_root].job_id)
-    _G.vite_active_servers[project_root] = nil
-    vim.notify("Vite Server stopped for [" .. vim.fn.fnamemodify(project_root, ":t") .. "]", vim.log.levels.INFO)
-    return
-  end
-
-  start_server(project_root)
 end
 
 return {

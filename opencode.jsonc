@@ -1,0 +1,16 @@
+// Config de OpenCode para este proyecto (nenvim).
+// Spec: specs/tasks/000-mcp-setup.md
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "nvim-mcp": {
+        "type": "local",
+        "command": ["uvx", "nvim-mcp"],
+        "environment": {
+          "NVIM_ADDRESS": "{env:XDG_RUNTIME_DIR}/nvim-mcp.sock"
+        }
+      }
+    }
+  }
+}

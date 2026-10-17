@@ -9,7 +9,7 @@ if not ok then
 end
 
 vim.schedule(function()
-  ts.install({
+  local wanted = {
     -- Base
     "lua",
     "vim",
@@ -53,7 +53,19 @@ vim.schedule(function()
     "diff",
     "gitignore",
     "gitcommit",
-  }):raise_on_error()
+  }
+
+  -- Instalar solo los que falten: ts.install en cada arranque revisaba todo
+  -- (spawns de git/red). Updates manuales con :TSUpdate.
+  local missing = {}
+  for _, lang in ipairs(wanted) do
+    if not pcall(vim.treesitter.language.add, lang) then
+      table.insert(missing, lang)
+    end
+  end
+  if #missing > 0 then
+    ts.install(missing):raise_on_error()
+  end
 end)
 
 vim.api.nvim_create_autocmd("FileType", {

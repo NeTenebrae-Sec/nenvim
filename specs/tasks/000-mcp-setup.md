@@ -1,0 +1,75 @@
+# Tarea 000 — Setup MCP (nvim-mcp)
+
+- **Estado:** 🚧 En progreso (infra lista; falta prueba de conexión con nvim abierto)
+- **Depende de:** ninguna
+- **Spec global:** `specs/GLOBAL.md`
+
+## Objetivo
+
+Que el agente pueda ver lo que el usuario ve en nvim (buffers, clientes
+LSP, diagnósticos, highlights) mediante nvim-mcp, como requisito de
+verificación de todas las tareas siguientes.
+
+## Alcance
+
+- Server MCP `nvim-mcp` registrado en la config de OpenCode de este proyecto.
+- Socket RPC con nombre fijo para la instancia interactiva de nvim.
+- Reglas de agente (`AGENTS.md`) para uso correcto de las herramientas.
+
+Fuera de alcance: mcphub u otros plugins de nvim (nvim-mcp no requiere
+plugins).
+
+## Criterios de aceptación
+
+### A. Server MCP
+
+- [x] `opencode.jsonc` (proyecto) declara `nvim-mcp` con `uvx nvim-mcp` —
+      _evidencia: archivo creado con server `nvim-mcp`, type local._
+- [x] La config global `~/.config/opencode/opencode.jsonc` no se modificó
+      (playwright intacto) — _evidencia: solo lectura de esa.config._
+- [x] `opencode mcp list` muestra `nvim-mcp` — _evidencia: salida real
+      `✓ nvim-mcp connected` (2026-10-17), junto a `✓ playwright connected`
+      intacto._
+
+### B. Socket de nvim
+
+- [x] `lua/config/rpc.lua` crea un socket con nombre fijo
+      (`$XDG_RUNTIME_DIR/nvim-mcp.sock`) al arrancar nvim, sin romper
+      instancias que ya tengan socket — _evidencia: archivo creado con
+      serverstart condicional + autocmd VimEnter._
+- [x] `init.lua` carga `config.rpc` — _evidencia: require agregado._
+- [x] `lua/config/rpc.lua` carga sin errores (verificado en nvim headless:
+      `rpc.lua OK`) — _evidencia: test headless 2026-10-17._
+- [x] `init.lua` carga `config.rpc` (parse OK) — _evidencia: test headless._
+- [ ] **Usuario:** abrir nvim y confirmar conexión — _2026-10-17: el server
+      MCP responde (`connect` devuelve "No Neovim instances found"), pero no
+      hay instancia corriendo; falta que el usuario abra nvim para probar
+      el socket real._
+
+### C. Reglas de agente
+
+- [x] `AGENTS.md` en la raíz del proyecto con las reglas de nvim-mcp
+      (basadas en AGENTS-EXAMPLE.md upstream, adaptadas al español) —
+      _evidencia: archivo creado._
+
+## Archivos a tocar
+
+- `opencode.jsonc` — server MCP del proyecto (nuevo)
+- `AGENTS.md` — reglas de agente (nuevo)
+- `lua/config/rpc.lua` — socket RPC (nuevo)
+- `init.lua` — require de rpc (edit)
+
+## Plan de verificación
+
+1. Cerrar y reabrir nvim → confirmar que `$XDG_RUNTIME_DIR/nvim-mcp.sock` existe.
+2. Reiniciar la sesión de OpenCode → `/mcps` o `opencode mcp list` → `nvim-mcp connected`.
+3. Pedir al agente: "¿qué archivo tengo abierto y qué diagnósticos hay?" — debe
+   responder con datos reales del buffer.
+
+## Riesgos y notas
+
+- La instancia `nvim --embed` que OpenCode lanza para su propio LSP también
+  expone socket (`nvim.<pid>.0`); por eso `NVIM_ADDRESS` fija la ruta y se
+  evita la autodescubierta ambigua.
+- `:h serverstart` en VimEnter es seguro: nvim permite múltiples servers por
+  instancia; si el socket ya está en uso por otra instancia, se omite.

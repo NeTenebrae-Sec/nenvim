@@ -10,78 +10,96 @@ function M.setup()
   local cache_items = {}
 
   local function refresh_html_ids_cache()
-    vim.schedule(function()
-      local items = {}
-      local seen = {}
-      local cwd = vim.fn.getcwd()
+    -- Root-scope: sin proyecto (ej. nvim lanzado desde $HOME) no se escanea nada
+    local root = vim.fs.root(0, { "package.json", ".git" })
+    if not root then
+      cache_items = {}
+      return
+    end
 
-      local glob_patterns = {
-        "**/*.html",
-        "**/*.astro",
-        "**/*.vue",
-        "**/*.svelte",
-        "**/*.jsx",
-        "**/*.tsx",
-        "**/*.php",
-      }
-
-      local web_files = {}
-      for _, pattern in ipairs(glob_patterns) do
-        local found = vim.fn.globpath(cwd, pattern, false, true)
-        vim.list_extend(web_files, found)
+    -- rg solo lista lo que .gitignore permite (node_modules/dist fuera) y es
+    -- async: el globpath anterior recorría 7 veces el árbol (~7s desde $HOME).
+    -- shortcut: requiere rg en PATH; sin él la caché queda vacía
+    vim.system({
+      "rg",
+      "--files",
+      "--glob",
+      "*.html",
+      "--glob",
+      "*.astro",
+      "--glob",
+      "*.vue",
+      "--glob",
+      "*.svelte",
+      "--glob",
+      "*.jsx",
+      "--glob",
+      "*.tsx",
+      "--glob",
+      "*.php",
+      root,
+    }, { text = true }, function(res)
+      if res.code == 2 then
+        return -- error real de rg: conservar la caché previa
       end
 
-      for _, filepath in ipairs(web_files) do
-        -- Excluir directorios pesados / no deseados
-        if
-          not filepath:find("node_modules")
-          and not filepath:find("%.git")
-          and not filepath:find("%.astro")
-          and not filepath:find("dist")
-          and not filepath:find("build")
-          and not filepath:find("%.next")
-          and not filepath:find("%.nuxt")
-        then
-          local file = io.open(filepath, "r")
-          if file then
-            local content = file:read("*a")
-            file:close()
+      vim.schedule(function()
+        local items = {}
+        local seen = {}
 
-            -- Regex compatible con HTML clásico, JSX y plantillas de Frameworks
-            for tag, full_tag, id in content:gmatch("<([%w%-]+)([^>]*%sid=[\"']([^\"']+)[\"'][^>]*)>") do
-              if not seen[id] then
-                seen[id] = true
-                local rel_path = vim.fn.fnamemodify(filepath, ":.")
-                local ext = vim.fn.fnamemodify(filepath, ":e")
+        for _, filepath in ipairs(vim.split(res.stdout or "", "\n")) do
+          -- Excluir directorios pesados / no deseados (redoble por si el .gitignore no los cubre)
+          if
+            filepath ~= ""
+            and not filepath:find("node_modules")
+            and not filepath:find("%.git")
+            and not filepath:find("%.astro")
+            and not filepath:find("dist")
+            and not filepath:find("build")
+            and not filepath:find("%.next")
+            and not filepath:find("%.nuxt")
+          then
+            local file = io.open(filepath, "r")
+            if file then
+              local content = file:read("*a")
+              file:close()
 
-                local doc_text = table.concat({
-                  "HTML ID: #" .. id,
-                  "",
-                  "Tag:  <" .. tag .. ">",
-                  "File: " .. rel_path,
-                  "",
-                  "```" .. (ext ~= "" and ext or "html"),
-                  "<" .. tag .. full_tag .. ">",
-                  "```",
-                }, "\n")
+              -- Regex compatible con HTML clásico, JSX y plantillas de Frameworks
+              for tag, full_tag, id in content:gmatch("<([%w%-]+)([^>]*%sid=[\"']([^\"']+)[\"'][^>]*)>") do
+                if not seen[id] then
+                  seen[id] = true
+                  local rel_path = vim.fn.fnamemodify(filepath, ":.")
+                  local ext = vim.fn.fnamemodify(filepath, ":e")
 
-                table.insert(items, {
-                  label = id,
-                  kind = cmp.lsp.CompletionItemKind.Value,
-                  detail = "<" .. tag .. "> (" .. ext .. ")",
-                  documentation = {
-                    kind = cmp.lsp.MarkupKind.Markdown,
-                    value = doc_text,
-                  },
-                  insertText = id,
-                })
+                  local doc_text = table.concat({
+                    "HTML ID: #" .. id,
+                    "",
+                    "Tag:  <" .. tag .. ">",
+                    "File: " .. rel_path,
+                    "",
+                    "```" .. (ext ~= "" and ext or "html"),
+                    "<" .. tag .. full_tag .. ">",
+                    "```",
+                  }, "\n")
+
+                  table.insert(items, {
+                    label = id,
+                    kind = cmp.lsp.CompletionItemKind.Value,
+                    detail = "<" .. tag .. "> (" .. ext .. ")",
+                    documentation = {
+                      kind = cmp.lsp.MarkupKind.Markdown,
+                      value = doc_text,
+                    },
+                    insertText = id,
+                  })
+                end
               end
             end
           end
         end
-      end
 
-      cache_items = items
+        cache_items = items
+      end)
     end)
   end
 

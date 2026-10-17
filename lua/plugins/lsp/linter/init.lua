@@ -12,6 +12,7 @@ local linters = {
   "css",
   "html",
   "markdown",
+  "astro",
 }
 
 for _, name in ipairs(linters) do
