@@ -1,5 +1,8 @@
 local M = {}
 
+-- jsx/tsx los resuelve la ficha react (runner vite) — aquí solo js/ts
+M.filetypes = { "javascript", "typescript" }
+
 --- Lógica de ejecución directa para JavaScript / Node.js en Kitty (<leader>fr)
 function M.run()
   local file = vim.fn.expand("%:p")

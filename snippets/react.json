@@ -1,0 +1,82 @@
+{
+	"react: function component": {
+		"prefix": "rfc",
+		"body": [
+			"function ${1:Component}() {",
+			"\treturn (",
+			"\t\t<div>$0</div>",
+			"\t);",
+			"}",
+			"",
+			"export default ${1:Component};"
+		],
+		"description": "Componente funcional con export default"
+	},
+	"react: arrow component": {
+		"prefix": "rac",
+		"body": [
+			"const ${1:Component} = () => {",
+			"\treturn (",
+			"\t\t<div>$0</div>",
+			"\t);",
+			"};",
+			"",
+			"export default ${1:Component};"
+		],
+		"description": "Componente arrow con export default"
+	},
+	"react: import React": {
+		"prefix": "impt",
+		"body": [
+			"import React from 'react';"
+		],
+		"description": "Import de React"
+	},
+	"react: import named": {
+		"prefix": "imn",
+		"body": [
+			"import { ${1:nombre} } from '${2:modulo}';"
+		],
+		"description": "Import nombrado"
+	},
+	"react: useEffect": {
+		"prefix": "uset",
+		"body": [
+			"useEffect(() => {",
+			"\t$0",
+			"\treturn () => {};",
+			"}, [${1:dependencias}]);"
+		],
+		"description": "useEffect con cleanup"
+	},
+	"react: useState": {
+		"prefix": "usst",
+		"body": [
+			"const [${1:state}, set${2:State}] = useState(${3:inicial});$0"
+		],
+		"description": "useState destructurizado"
+	},
+	"react: useRef": {
+		"prefix": "usrf",
+		"body": [
+			"const ${1:ref} = useRef(${2:null});$0"
+		],
+		"description": "useRef"
+	},
+	"react: useContext": {
+		"prefix": "usct",
+		"body": [
+			"const ${1:contexto} = useContext(${2:Context});$0"
+		],
+		"description": "useContext"
+	},
+	"react: map list": {
+		"prefix": "rmap",
+		"body": [
+			"${1:items}.map((${2:item}) => (",
+			"\t<div key={${2:item}.id}>$0</div>",
+			"))"
+		],
+		"description": "Lista con map y key"
+	}
+}

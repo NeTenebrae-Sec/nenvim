@@ -5,6 +5,10 @@
 			{
 				"language": ["astro"],
 				"path": "./astro.json"
+			},
+			{
+				"language": ["javascriptreact", "typescriptreact"],
+				"path": "./react.json"
 			}
 		]
 	}
