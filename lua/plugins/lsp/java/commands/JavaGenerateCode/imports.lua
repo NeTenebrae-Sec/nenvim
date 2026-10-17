@@ -7,7 +7,12 @@ function M.handle()
     return
   end
 
-  -- Ejecución vanilla y estándar proveida por nvim-jdtls
+  local clients = vim.lsp.get_clients({ name = "jdtls", bufnr = 0 })
+  if #clients == 0 then
+    vim.notify("JDTLS not attached to this buffer", vim.log.levels.WARN, { title = "Java LSP" })
+    return
+  end
+
   jdtls.organize_imports()
 end
 

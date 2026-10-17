@@ -488,3 +488,8 @@ vim.api.nvim_create_user_command("GitIgnore", create_gitignore, {
 })
 
 -- :SqlInit eliminado -> ahora en plugins/lsp/servers/sql.lua
+
+-- ============================================================================
+-- ENV FILE LOADER
+-- ============================================================================
+require("config.env")

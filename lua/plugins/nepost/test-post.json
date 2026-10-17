@@ -1,0 +1,6 @@
+// @POST https://jsonplaceholder.typicode.com/posts
+{
+  "title": "Mi primer post",
+  "body": "Probando nepost plugin",
+  "userId": 1
+}

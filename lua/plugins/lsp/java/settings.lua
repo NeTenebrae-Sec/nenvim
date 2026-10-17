@@ -40,7 +40,7 @@ function M.get_settings()
     java = {
       format = format_settings,
       project = {
-        sourcePaths = { "src", "src/main/java" },
+        sourcePaths = { "src", "src/main/java", "src/test/java" },
         outputPath = "out",
       },
       eclipse = { downloadSources = true },

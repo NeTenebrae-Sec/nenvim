@@ -1,4 +1,16 @@
+out/
 pack/
 .obsidian/
 lua/plugins/debug.log
 .vite/
+
+node_modules/
+*.log
+.env
+target/
+.gradle/
+.mvn/
+.idea/
+.vscode/
+*.tmp
+*.bak

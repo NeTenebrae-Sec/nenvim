@@ -134,7 +134,7 @@ function M.setup()
           vim.notify(result.message or "", levels[result.type] or vim.log.levels.INFO, { title = "Java LSP (JDTLS)" })
         end,
       },
-      on_attach = function(_, _)
+      on_attach = function(client, _)
         jdtls.setup_dap({
           hotcodereplace = "auto",
           config_overrides = {
@@ -154,6 +154,12 @@ function M.setup()
             dap_config.classPaths = { "${workspaceFolder}/out" }
           end
         end
+
+        client:request("java/buildWorkspace", true, function(err)
+          if not err then
+            vim.notify("Workspace built — imports should resolve correctly", vim.log.levels.INFO, { title = "Java LSP" })
+          end
+        end)
       end,
     }
 
