@@ -1,6 +1,6 @@
 # Tarea 002 — Arquitectura por lenguaje (motores + fichas)
 
-- **Estado:** 🚧 F0–F2 completados y verificados (fases F3–F5 pendientes)
+- **Estado:** ✅ Completada (F0–F5 verificados; evidencia en cada criterio)
 - **Depende de:** 000 (MCP para verificación en vivo), 003 (línea base anti-regresión)
 - **Spec global:** `specs/GLOBAL.md`
 
@@ -154,11 +154,17 @@ API pública de cada motor: `setup()` + `register(datos)`.
       menciones html-css en las sesiones de verificación de hoy; los
       servers html-css solo viven dentro del proyecto con package.json
       donde aporta el plugin.)*
-- [ ] R5 cross-file verificado en astro y TS/TSX. *(F4.)*
+- [x] R5 cross-file verificado en astro y TS/TSX. *(Evidencia F4: probe
+      de completion vía LSP — index.astro import → `getDictionary`
+      desde utils.ts (astro-ls); utils.ts import provisional →
+      `defaultLocale` kind=Variable desde config.ts (vtsls, 309 items).
+      Fuente path/buffer globales en core/cmp; fuentes por ficha
+      via campo `cmp` — html_ids por ficha html-css.)*
 - [x] Sin regresión 003. *(Evidencia F2: arranque 271–442 ms vs línea base
       522–937 ms; edit HTML sin cambios de motor.)*
-- [x] GLOBAL §4 actualizado; roadmap 002 ✅ *(§4 actualizado en F2; roadmap
-      se marca en F5.)*
+- [x] GLOBAL §4 actualizado; roadmap 002 ✅. *(Evidencia F5: §4 con
+      arquitectura motores/fichas, R2 actualizado y tabla DoD por
+      lenguaje con evidencia; roadmap 002 marcado ✅.)*
 
 ## Plan de verificación
 
