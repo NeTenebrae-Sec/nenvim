@@ -27,13 +27,15 @@ M.modules = {
   "plugins.UI.ccc",
 
   -- Core Utilities (lua/plugins/)
-  "plugins.treesitter",
+  "core.treesitter",
   "plugins.mini",
   "plugins.snacks",
   "plugins.flash",
   "plugins.live-server",
+  "plugins.astro",
   "plugins.multi_cursor",
   "plugins.trident",
+  "plugins.nepost",
   "plugins.perf_monitor",
 
   -- Entorno LSP / Configs de Desarrollo (En lua/plugins/lsp/)
@@ -41,10 +43,9 @@ M.modules = {
   "plugins.lsp.init",
   "plugins.lsp.otter",
   "plugins.lsp.linter",
-  "plugins.lsp.cmp",
-  "plugins.lsp.linter",
+  "core.cmp",
   "plugins.lsp.formatters",
-  "plugins.lsp.dap.init",
+  "core.dap",
 }
 
 M.load_all = function()

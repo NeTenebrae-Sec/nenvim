@@ -3,24 +3,39 @@
 -- Navegacion, busqueda y Flash.
 -- =========================================================
 
-local Snacks = require("snacks")
+local ok_snacks, Snacks = pcall(require, "snacks")
 
 -- === SNACKS EXPLORER / FINDER ===
 nmap("<leader>e", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.explorer()
 end, "Explorer: Toggle")
 nmap("<leader>ff", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.picker.files()
 end, "Find: Files")
 nmap("<leader>fg", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.picker.grep()
 end, "Find: Grep")
 nmap("<leader>fb", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.picker.buffers()
 end, "Find: Buffers")
 
 -- === NOTIFICACIONES ===
 nmap("<leader>un", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.notifier.show_history()
 end, "Notification: History")
 

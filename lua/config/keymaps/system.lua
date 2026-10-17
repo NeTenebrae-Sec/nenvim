@@ -3,7 +3,7 @@
 -- Sistema, utilidades generales y herramientas auxiliares.
 -- =========================================================
 
-local Snacks = require("snacks")
+local ok_snacks, Snacks = pcall(require, "snacks")
 
 -- === SISTEMA ===
 nmap("<leader>X", "<cmd>!chmod +x %<CR>", "Make File Executable")
@@ -33,25 +33,37 @@ end, "Toggle Builtin Undotree")
 
 -- === SNACKS TERMINAL / TOGGLE ===
 nmap("<leader>tt", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.terminal()
 end, "Terminal: Toggle")
 
 nmap("<leader>ud", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.toggle.dim():toggle()
 end, "Focus: Toggle Dim")
 
 nmap("<leader>uz", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.toggle.zen():toggle()
 end, "Zen: Toggle Mode")
 
--- === LIVE SERVER (Vite) ===
+-- === WEB SERVER (Serve & Open) ===
 local ok_vite, vite = pcall(require, "plugins.live-server")
 if ok_vite then
-  nmap("<leader>us", vite.toggle_vite_server, "Vite: Toggle Server (Multi-project)")
+  nmap("<leader>us", vite.toggle_vite_server, "Web: Serve & Open")
 end
 
 -- === GIT (Lazygit & Gitsigns) ===
 nmap("<leader>gg", function()
+  if not ok_snacks then
+    return
+  end
   Snacks.lazygit()
 end, "Git: Lazygit")
 nmap("<leader>gb", "<cmd>Gitsigns blame_line<CR>", "Git: Blame Line")

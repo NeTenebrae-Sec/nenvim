@@ -1,3 +1,6 @@
+-- =========================================================
+-- Motor DAP > runner: <leader>dr (detección → módulo del lenguaje)
+-- =========================================================
 local M = {}
 
 -- Alias map for equivalent filetypes

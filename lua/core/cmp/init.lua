@@ -1,3 +1,10 @@
+-- =========================================================
+-- Motor CMP: UI, performance y fuentes globales
+-- =========================================================
+-- Las fuentes globales viven aquí; las fuentes extras por lenguaje
+-- las aportan las fichas de languages/ (schema 002). Mientras tanto
+-- html_ids sigue registrado en plugins/lsp/cmp/ (F2 002).
+
 local ok_cmp, cmp = pcall(require, "cmp")
 if not ok_cmp then
   return
@@ -57,12 +64,12 @@ cmp.setup({
         Text = "󰉿",
         Method = "󰆧",
         Function = "󰊕",
-        Constructor = "",
+        Constructor = "",
         Field = "󰜢",
         Variable = "󰀫",
         Class = "󰠱",
         Interface = "󱤊",
-        Module = "",
+        Module = "",
         Property = "󰜢",
         Unit = "󰑭",
         Value = "󰎨",
@@ -81,7 +88,7 @@ cmp.setup({
         TypeParameter = "󰅲",
       }
 
-      vim_item.kind = string.format(" %s ", kind_icons[vim_item.kind] or "")
+      vim_item.kind = string.format(" %s ", kind_icons[vim_item.kind] or "")
       -- Etiquetas estéticas y ordenadas para el lado derecho
       local menus = {
         nvim_lsp = "󰅩 LSP",
