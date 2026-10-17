@@ -54,14 +54,38 @@ local M = {
           "svelte",
           "astro",
         },
-        root_markers = {
-          "tailwind.config.js",
-          "tailwind.config.ts",
-          "postcss.config.js",
-          "postcss.config.ts",
-          "package.json",
-          ".git",
-        },
+        -- Guard anti-rogue (spec 002 F3): solo arranca en proyectos con
+        -- tailwind real — config explícita (tailwind/postcss.config.*)
+        -- o dependencia "tailwindcss" en package.json. Sin eso no se
+        -- hace on_dir y el servidor ni siquiera se spawnea.
+        root_dir = function(bufnr, on_dir)
+          local fname = vim.api.nvim_buf_get_name(bufnr)
+          local root = vim.fs.root(fname, {
+            "tailwind.config.js",
+            "tailwind.config.ts",
+            "tailwind.config.mjs",
+            "tailwind.config.cjs",
+            "postcss.config.js",
+            "postcss.config.cjs",
+            "postcss.config.ts",
+          })
+          if not root then
+            local pkg = vim.fs.root(fname, { "package.json" })
+            if pkg then
+              local fd = io.open(pkg .. "/package.json", "r")
+              if fd then
+                local content = fd:read("*a") or ""
+                fd:close()
+                if content:find('"tailwindcss"', 1, true) then
+                  root = pkg
+                end
+              end
+            end
+          end
+          if root then
+            on_dir(root)
+          end
+        end,
       },
     },
     {

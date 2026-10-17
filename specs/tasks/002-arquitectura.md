@@ -121,7 +121,11 @@ API pública de cada motor: `setup()` + `register(datos)`.
   `servers/`, `linter/`, `formatters/`, `dap/<lang>`. Al final: borrar
   directorios vacíos. GLOBAL §4 actualizado.
 - **F3 Cero attaches rogue**: guards de proyecto (tailwind, html-css/cssls,
-  vtsls).
+  vtsls). ✅ Implementado como `root_dir` condicional en las configs de
+  las fichas (evita el spawn por completo, sin attach-then-detach):
+  tailwind requiere config explícita (tailwind/postcss.config.*) o
+  dependencia `tailwindcss` en package.json; vtsls requiere
+  tsconfig/jsconfig/package.json (ya no basta con `.git`).
 - **F4 CMP cross-file**: fuentes por ficha; auditoría astro + TS/TSX.
 - **F5 DoD + health**: tabla "lenguaje completado" en GLOBAL §4;
   `:checkhealth nete`; roadmap 002 ✅.
@@ -142,10 +146,14 @@ API pública de cada motor: `setup()` + `register(datos)`.
       astro+emmet+tailwind con config efectiva correcta; paridad
       lint/format por tablas. Snippets/CMP/keymaps: en sesión tras
       reiniciar.)*
-- [ ] Proyecto con tailwind real: tailwind activo solo ahí. *(F3 —
-      hallazgo F2: neteumbra NO usa tailwind y aún así adjunta → rogue
-      confirmado, base del guard de F3.)*
-- [ ] flood `html-css-lsp` ausente de lsp.log. *(F3.)*
+- [x] Proyecto con tailwind real: tailwind activo solo ahí. *(Evidencia
+      F3: guard por `root_dir` condicional — neteumbra .astro →
+      astro+emmet SIN tailwind; fixture /tmp/tw-project con dep
+      tailwindcss → tailwindcss adjunta.)*
+- [x] flood `html-css-lsp` ausente de lsp.log. *(Evidencia F3: 0
+      menciones html-css en las sesiones de verificación de hoy; los
+      servers html-css solo viven dentro del proyecto con package.json
+      donde aporta el plugin.)*
 - [ ] R5 cross-file verificado en astro y TS/TSX. *(F4.)*
 - [x] Sin regresión 003. *(Evidencia F2: arranque 271–442 ms vs línea base
       522–937 ms; edit HTML sin cambios de motor.)*

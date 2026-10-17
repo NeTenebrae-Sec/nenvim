@@ -22,7 +22,16 @@ local M = {
           "typescriptreact",
           "typescript.tsx",
         },
-        root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+        -- Guard anti-rogue (spec 002 F3): requiere manifiesto node
+        -- (tsconfig/jsconfig/package.json). Un .ts suelto en un repo
+        -- sin package.json no arranca vtsls (antes bastaba .git).
+        root_dir = function(bufnr, on_dir)
+          local fname = vim.api.nvim_buf_get_name(bufnr)
+          local root = vim.fs.root(fname, { "tsconfig.json", "jsconfig.json", "package.json" })
+          if root then
+            on_dir(root)
+          end
+        end,
         settings = {
           typescript = {
             suggest = { completeFunctionCalls = true },
