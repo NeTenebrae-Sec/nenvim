@@ -83,6 +83,17 @@ con nota de qué faltó.
   `specs/tasks/002-arquitectura.md`.
 - **Defensivo**: toda integración externa con `pcall` y retorno temprano si
   falta la dependencia (patrón usado en toda la config).
+- **DoD por lenguaje (evidencia observada)** — ✅ = verificado en vivo;
+  paridad = comportamiento idéntico al pre-refactor confirmado por
+  tablas/módulos en la migración (spec 002 F2):
+
+  | Lenguaje | R1 live | R2 runner | R3 lint | R4 LSP | R5 CMP |
+  | --- | --- | --- | --- | --- | --- |
+  | astro | ✅ 001 | ✅ 001 | ✅ eslint | ✅ 002 F2 | ✅ 002 F4 |
+  | node-ts | ✅ 001 | paridad | ✅ oxlint | ✅ 002 F2 | ✅ 002 F4 |
+  | html-css | paridad | n/a (web) | ✅ markuplint/stylelint | ✅ 002 F2 | ✅ html_ids |
+  | java | — | paridad | n/a | ✅ jdtls (001–WIP) | — |
+  | lua/python/c/bash/markdown/sql/vue/svelte/json | — | paridad | paridad | paridad | — |
 - **Sin duplicates**: antes de agregar un linter/server, verificar que no
   duplica diagnósticos ya cubiertos por otro componente.
 - **Configs locales primero**: si el proyecto trae su config (prettierrc,
@@ -110,7 +121,7 @@ con nota de qué faltó.
 | --- | --- | --- |
 | 000 | Setup MCP (nvim-mcp + socket + reglas de agente) | ✅ Completada |
 | 001 | Astro al 100% | 🚧 Casi completa (ver `specs/tasks/001-astro-100.md` §I) |
-| 002 | Toolchain: registro único `filetype → {lsp,lint,format,cmp}` + guard `LspAttach` | ⬜ Propuesta (siguiente) |
+| 002 | Arquitectura por lenguaje: motores core/ + fichas languages/ (R0 comunidad) | ✅ Completada (ver `specs/tasks/002-arquitectura.md`) |
 | 003 | Rendimiento (línea base: 4,6 s arranque / 1,06 s edit HTML 12k → objetivo <2 s / <400 ms) | ✅ Completada (ver `specs/tasks/003-rendimiento.md`) |
 | 004 | Node.js / TypeScript | ⬜ Pendiente |
 | 005 | React / JSX | ⬜ Pendiente |
