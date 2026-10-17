@@ -93,6 +93,9 @@ con nota de qué faltó.
   | node-ts | ✅ 001 | paridad | ✅ oxlint | ✅ 002 F2 | ✅ 002 F4 |
   | html-css | paridad | n/a (web) | ✅ markuplint/stylelint | ✅ 002 F2 | ✅ html_ids |
   | java | — | paridad | n/a | ✅ jdtls (001–WIP) | — |
+  | react | ✅ vite (005) | ✅ 005 (menú vite) | ✅ oxlint (005) | ✅ vtsls (005) | ✅ 005 |
+  | nextjs | ✅ 006 (next dev) | ✅ 006 (menú next) | ✅ oxlint (006) | ✅ vtsls (006) | ✅ 006 |
+  | yaml | — | — | — | ✅ yamlls (007) | — |
   | lua/python/c/bash/markdown/sql/vue/svelte/json | — | paridad | paridad | paridad | — |
 - **Sin duplicates**: antes de agregar un linter/server, verificar que no
   duplica diagnósticos ya cubiertos por otro componente.
@@ -123,11 +126,11 @@ con nota de qué faltó.
 | 001 | Astro al 100% | 🚧 Casi completa (ver `specs/tasks/001-astro-100.md` §I) |
 | 002 | Arquitectura por lenguaje: motores core/ + fichas languages/ (R0 comunidad) | ✅ Completada (ver `specs/tasks/002-arquitectura.md`) |
 | 003 | Rendimiento (línea base: 4,6 s arranque / 1,06 s edit HTML 12k → objetivo <2 s / <400 ms) | ✅ Completada (ver `specs/tasks/003-rendimiento.md`) |
-| 004 | Node.js / TypeScript | ⬜ Pendiente |
-| 005 | React / JSX | ⬜ Pendiente |
-| 006 | NextJS | ⬜ Pendiente |
-| 007 | Bases (HTML/CSS/JSON/YAML/Lua/MD) | ⬜ Pendiente |
-| 008 | Refinamientos globales (flood html-css, stack TS único, semantic tokens, tailwind/html-css sobrantes) | ⬜ Pendiente |
+| 004 | Node.js / TypeScript | ✅ Absorbida por 002 (ver `specs/tasks/004-node-ts.md`) |
+| 005 | React / JSX | ✅ Completada (ver `specs/tasks/005-react.md`) |
+| 006 | NextJS | ✅ Completada (ver `specs/tasks/006-nextjs.md`) |
+| 007 | Bases (HTML/CSS/JSON/YAML/Lua/MD) | ✅ Completada (ver `specs/tasks/007-bases.md`) |
+| 008 | Refinamientos globales (flood html-css, stack TS único, semantic tokens, tailwind/html-css sobrantes) | ✅ Completada (ver `specs/tasks/008-refinamientos.md`) |
 
 > La tarea **002 (toolchain)** es el marco que absorbe las excepciones
 > actuales (plugins que se wiring solos: `html-css-lsp`, otter) y hace que

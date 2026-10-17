@@ -1,0 +1,68 @@
+{
+	"next: use client": {
+		"prefix": "nc",
+		"body": [
+			"'use client';",
+			"",
+			"$0"
+		],
+		"description": "Directiva 'use client' (app router)"
+	},
+	"next: page (app router)": {
+		"prefix": "npage",
+		"body": [
+			"export default function ${1:Page}() {",
+			"\treturn (",
+			"\t\t<main>$0</main>",
+			"\t);",
+			"}"
+		],
+		"description": "Página app router"
+	},
+	"next: layout (app router)": {
+		"prefix": "nlayout",
+		"body": [
+			"export default function ${1:Layout}({",
+			"\tchildren,",
+			"}: {",
+			"\tchildren: React.ReactNode;",
+			"}) {",
+			"\treturn <>{children}</>;$0",
+			"}"
+		],
+		"description": "Layout app router con children"
+	},
+	"next: metadata": {
+		"prefix": "nmeta",
+		"body": [
+			"export const metadata: Metadata = {",
+			"\ttitle: '${1:Título}',",
+			"\tdescription: '${2:Descripción}',",
+			"};$0"
+		],
+		"description": "Export de metadata de página"
+	},
+	"next: Link": {
+		"prefix": "nlink",
+		"body": [
+			"import Link from 'next/link';",
+			"",
+			"<Link href=\"${1:/}\">$0</Link>"
+		],
+		"description": "Link de Next"
+	},
+	"next: Image": {
+		"prefix": "nimg",
+		"body": [
+			"import Image from 'next/image';",
+			"",
+			"<Image",
+			"\tsrc=\"${1:/imagen.png}\"",
+			"\talt=\"${2:alt}\"",
+			"\twidth={${3:800}}",
+			"\theight={${4:600}}",
+			"/>$0"
+		],
+		"description": "Image optimizada de Next"
+	}
+}

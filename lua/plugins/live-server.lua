@@ -123,10 +123,12 @@ local function start_server(project_root)
     end
   end
 
-  -- Astro: vite no entiende .astro → usar el dev server local del proyecto
+  -- Framework detection: astro (bin+config) → next (bin) → vite
   local astro_bin = project_root .. "/node_modules/.bin/astro"
+  local next_bin = project_root .. "/node_modules/.bin/next"
   local is_astro = vim.fn.filereadable(astro_bin) == 1 and vim.fn.glob(project_root .. "/astro.config.*") ~= ""
-  local framework = is_astro and "astro" or "vite"
+  local is_next = not is_astro and vim.fn.filereadable(next_bin) == 1
+  local framework = is_astro and "astro" or (is_next and "next" or "vite")
 
   -- Astro 7: sin root posicional (es el subcommand stop/status/logs) → cwd = root;
   -- sin --port: respeta su puerto por defecto/config (4321 en neteumbra).
@@ -134,6 +136,9 @@ local function start_server(project_root)
   local cmd
   if is_astro then
     cmd = string.format("'%s' dev", astro_bin)
+  elseif is_next then
+    -- next dev del proyecto (puerto por defecto 3000 o el de next.config)
+    cmd = string.format("'%s' dev", next_bin)
   else
     cmd = string.format("%s dev --port %s --force", find_vite(), get_available_port())
   end

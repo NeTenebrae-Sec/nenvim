@@ -9,6 +9,10 @@
 			{
 				"language": ["javascriptreact", "typescriptreact"],
 				"path": "./react.json"
+			},
+			{
+				"language": ["javascriptreact", "typescriptreact"],
+				"path": "./next.json"
 			}
 		]
 	}
