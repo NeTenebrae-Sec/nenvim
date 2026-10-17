@@ -32,19 +32,18 @@ M.modules = {
   "plugins.snacks",
   "plugins.flash",
   "plugins.live-server",
-  "plugins.astro",
   "plugins.multi_cursor",
   "plugins.trident",
   "plugins.nepost",
   "plugins.perf_monitor",
 
-  -- Entorno LSP / Configs de Desarrollo (En lua/plugins/lsp/)
-  "plugins.lsp.lazydev",
-  "plugins.lsp.init",
-  "plugins.lsp.otter",
-  "plugins.lsp.linter",
+  -- Entorno LSP: motores + fichas de languages/ (schema 002)
+  "plugins.otter",
+  "core.mason",
+  "core.lsp",
+  "core.lint",
+  "core.format",
   "core.cmp",
-  "plugins.lsp.formatters",
   "core.dap",
 }
 

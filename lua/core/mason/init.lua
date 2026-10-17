@@ -1,10 +1,13 @@
 -- =========================================================
--- Motor Mason: instalación de binarios declarados
+-- Motor Mason: instalación de binarios declarados por fichas
 -- =========================================================
 -- auto_update=false: sin checks de red en cada arranque (specs/tasks/003).
 -- Updates manuales: :MasonToolsUpdate.
--- En F2 (spec 002) la lista `ensure_installed` se absorbe desde los
--- campos `tools` de las fichas de languages/.
+-- La lista ensure_installed se colecta de los campos `tools` de las
+-- fichas de languages/ (schema 002), sin duplicados.
+
+-- PATH de Mason en el entorno Neovim
+vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 
 local ok_mason, mason = pcall(require, "mason")
 if not ok_mason then
@@ -25,57 +28,27 @@ mason.setup({
   },
 })
 
+-- Colectar tools de las fichas de lenguaje (dedupe, orden estable)
+local tools = {}
+do
+  local ok_langs, languages = pcall(require, "languages")
+  if ok_langs then
+    local seen = {}
+    for _, ficha in ipairs(languages.all()) do
+      for _, tool in ipairs(ficha.tools or {}) do
+        if not seen[tool] then
+          seen[tool] = true
+          table.insert(tools, tool)
+        end
+      end
+    end
+  end
+end
+
 local ok_mti, mti = pcall(require, "mason-tool-installer")
 if ok_mti then
   mti.setup({
-    ensure_installed = {
-      -- LSPs
-      "astro-language-server",
-      "bash-language-server",
-      "clangd",
-      "css-lsp",
-      "emmet-language-server",
-      "html-lsp",
-      "json-lsp",
-      "lua-language-server",
-      "marksman",
-      "sqlls",
-      "postgres-language-server",
-      "sqlfluff",
-      "prisma-language-server",
-      "basedpyright",
-      "svelte-language-server",
-      "tailwindcss-language-server",
-      "taplo",
-      "vue-language-server",
-      "vtsls",
-      "yaml-language-server",
-      "typescript-language-server",
-      -- Formatters & Linters
-      "markuplint",
-      "oxlint",
-      "prettier",
-      "prettierd",
-      "stylua",
-      "black",
-      "isort",
-      "ruff",
-      "shfmt",
-      "clang-format",
-      "shellcheck",
-      "markdownlint",
-      "stylelint",
-      "mdformat",
-      -- DAP
-      "bash-debug-adapter",
-      "codelldb",
-      "debugpy",
-      "js-debug-adapter",
-      "jdtls",
-      "java-debug-adapter",
-      "java-test",
-      "vscode-spring-boot-tools",
-    },
+    ensure_installed = tools,
     run_on_start = true,
     auto_update = false,
   })

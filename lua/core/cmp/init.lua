@@ -2,21 +2,30 @@
 -- Motor CMP: UI, performance y fuentes globales
 -- =========================================================
 -- Las fuentes globales viven aquí; las fuentes extras por lenguaje
--- las aportan las fichas de languages/ (schema 002). Mientras tanto
--- html_ids sigue registrado en plugins/lsp/cmp/ (F2 002).
+-- las aportan las fichas de languages/ via su campo `cmp`
+-- (schema 002: cmp = { setup = "ruta.al.modulo" }).
 
 local ok_cmp, cmp = pcall(require, "cmp")
 if not ok_cmp then
   return
 end
 
-pcall(require, "plugins.lsp.cmp.luasnip")
+pcall(require, "core.cmp.luasnip")
 
 -- Cacheamos LuaSnip arriba una sola vez para rendimiento máximo
 local ok_luasnip, luasnip = pcall(require, "luasnip")
-local ok_html_ids, html_ids = pcall(require, "plugins.lsp.cmp.html_ids")
-if ok_html_ids then
-  html_ids.setup()
+
+-- Fuentes extras declaradas por las fichas de lenguaje (ej. html_ids)
+local ok_langs, languages = pcall(require, "languages")
+if ok_langs then
+  for _, ficha in ipairs(languages.all()) do
+    if ficha.cmp and ficha.cmp.setup then
+      local ok_mod, mod = pcall(require, ficha.cmp.setup)
+      if ok_mod and type(mod) == "table" and type(mod.setup) == "function" then
+        mod.setup()
+      end
+    end
+  end
 end
 
 cmp.setup({

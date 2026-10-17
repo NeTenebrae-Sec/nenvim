@@ -1,29 +1,24 @@
 -- =========================================================
--- Motor DAP > runner: <leader>dr (detección → módulo del lenguaje)
+-- Motor DAP > runner: <leader>dr (detección → ficha del lenguaje)
 -- =========================================================
-local M = {}
+-- Resuelve run() desde el campo `dap` de las fichas de languages/,
+-- matcheando el filetype actual contra `filetypes` de cada ficha.
 
--- Alias map for equivalent filetypes
-local ft_aliases = {
-  sh = "bash",
-  cpp = "c",
-  typescript = "js",
-  javascript = "js",
-  javascriptreact = "js",
-  typescriptreact = "js",
-}
+local M = {}
 
 function M.run_current_file()
   local ft = vim.bo.filetype
-  ft = ft_aliases[ft] or ft
 
-  local ok, module = pcall(require, "plugins.lsp.dap." .. ft)
-
-  if ok and type(module.run) == "function" then
-    module.run()
-  else
-    vim.notify("No M.run() function configured for filetype: " .. ft, vim.log.levels.WARN)
+  local ok_langs, languages = pcall(require, "languages")
+  if ok_langs then
+    for _, ficha in ipairs(languages.all()) do
+      if ficha.dap and type(ficha.dap.run) == "function" and vim.tbl_contains(ficha.filetypes or {}, ft) then
+        return ficha.dap.run()
+      end
+    end
   end
+
+  vim.notify("No hay runner DAP para filetype: " .. ft, vim.log.levels.WARN)
 end
 
 return M

@@ -3,8 +3,9 @@
 -- =========================================================
 -- Posee: keymap <leader>dr, fallback Kitty, ui (signs/dapui/listeners)
 -- y el wiring de adapters/configurations por filetype.
--- Las fichas de languages/ aportan `dap` (schema 002); mientras tanto
--- la lista de módulos temporal carga plugins/lsp/dap/<ft>.lua (F2 002).
+-- Las fichas de languages/ aportan `dap` = { run, setup }
+-- (schema 002); el motor llama setup(dap, mason_path) de cada una
+-- y el runner resuelve run() por filetype.
 
 local ok_dap, dap_lib = pcall(require, "dap")
 if not ok_dap then
@@ -30,20 +31,17 @@ dap_lib.defaults.fallback.external_terminal = {
 
 require("core.dap.ui")
 
--- Registro de configurations/adapters por filetype (schema 002)
-local M = {}
-
--- Temporal: módulos de lenguaje todavía en plugins/lsp/dap/ (F2 002)
-local configs = { "js", "python", "bash", "c", "java", "astro" }
+-- Registro de configurations/adapters desde las fichas (schema 002)
 local mason_path = vim.fn.stdpath("data") .. "/mason"
 
-for _, config in ipairs(configs) do
-  local ok, module = pcall(require, "plugins.lsp.dap." .. config)
-  if ok and type(module.setup) == "function" then
-    module.setup(dap_lib, mason_path)
-  else
-    vim.notify("Failed to load DAP config for: " .. config, vim.log.levels.WARN)
+local ok_langs, languages = pcall(require, "languages")
+if ok_langs then
+  for _, ficha in ipairs(languages.all()) do
+    if ficha.dap and type(ficha.dap.setup) == "function" then
+      local ok_setup, err = pcall(ficha.dap.setup, dap_lib, mason_path)
+      if not ok_setup then
+        vim.notify("DAP setup falló (" .. (ficha.name or "?") .. "): " .. tostring(err), vim.log.levels.WARN)
+      end
+    end
   end
 end
-
-return M

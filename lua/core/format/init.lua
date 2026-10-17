@@ -1,9 +1,9 @@
 -- =========================================================
 -- Motor Formato (conform): machinery + registro por fichas
 -- =========================================================
--- Los datos (ft→formatters) llegan por register(). En F0 los siguen
--- aportando los módulos de plugins/lsp/formatters/ (temporal hasta
--- F2 de la spec 002); en F2 las fichas de languages/ los registran.
+-- Los datos llegan de las fichas de languages/ (schema 002):
+-- `format` = tabla simple ft→formatters; `format_modules` = rutas a
+-- módulos completos (args dinámicos por proyecto, init_config).
 
 local M = {}
 
@@ -26,6 +26,22 @@ function M.register(mod)
 end
 
 function M.setup()
+  -- Registro desde fichas de lenguaje (schema 002)
+  local ok_langs, languages = pcall(require, "languages")
+  if ok_langs then
+    for _, ficha in ipairs(languages.all()) do
+      if ficha.format then
+        M.register({ formatters_by_ft = ficha.format })
+      end
+      for _, mod_path in ipairs(ficha.format_modules or {}) do
+        local ok_mod, mod = pcall(require, mod_path)
+        if ok_mod and type(mod) == "table" then
+          M.register(mod)
+        end
+      end
+    end
+  end
+
   conform.setup({
     formatters_by_ft = combined_by_ft,
     formatters = combined_defs,
@@ -34,6 +50,16 @@ function M.setup()
       lsp_format = "fallback",
     },
   })
+
+  -- Comandos de usuario (:FormatProject y :FormatInit)
+  local ok_commands, commands = pcall(require, "core.format.commands")
+  if ok_commands and commands then
+    commands.setup()
+  end
 end
+
+-- El motor se activa al cargarse: en la lista de módulos va DESPUÉS
+-- de core.lsp (el scanner de fichas queda cacheado y disponible)
+M.setup()
 
 return M

@@ -1,9 +1,11 @@
 -- =========================================================
 -- Motor Lint (nvim-lint): machinery + registro por fichas
 -- =========================================================
--- Los datos (ft→linters) los registran en F0 los módulos de
--- plugins/lsp/linter/ (temporal hasta F2 de la spec 002) y en F2
--- las fichas de languages/, vía M.register(ft, linters).
+-- Los datos (ft→linters) los aportan las fichas de languages/ via
+-- su campo `lint` (schema 002). Las configs avanzadas de un linter
+-- (args con detección de config del proyecto) viven en los auxiliares
+-- de la propia ficha. Sin reset de la tabla: los auxiliares de las
+-- fichas pueden haber registrado antes (orden de carga libre).
 
 local M = {}
 
@@ -12,11 +14,21 @@ if not ok then
   return
 end
 
-lint.linters_by_ft = {}
+lint.linters_by_ft = lint.linters_by_ft or {}
 M.lint = lint
 
 function M.register(ft, linters)
   lint.linters_by_ft[ft] = linters
+end
+
+-- Registro desde fichas de lenguaje (schema 002)
+local ok_langs, languages = pcall(require, "languages")
+if ok_langs then
+  for _, ficha in ipairs(languages.all()) do
+    for ft, linters in pairs(ficha.lint or {}) do
+      M.register(ft, linters)
+    end
+  end
 end
 
 -- Autocomando global para ejecutar nvim-lint

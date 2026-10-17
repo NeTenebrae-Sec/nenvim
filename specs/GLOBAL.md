@@ -64,8 +64,8 @@ con nota de qué faltó.
   integre debe cumplir, verificado en vivo:
   - **R1** Live-server: `<leader>us` sirve el proyecto (detectar el dev
     server propio del framework; p. ej. `astro dev`, no `vite`).
-  - **R2** DAP/runner: módulo en `lua/plugins/lsp/dap/<ft>.lua` con
-    `run()` (detección→menú→Kitty, patrón `java.lua`) y `setup()`.
+  - **R2** DAP/runner: `dap` en la ficha `lua/languages/<lengua>/`
+    (`run()` detección→menú→Kitty + `setup()`, patrón histórico `java`).
     **Opcional en frontend** (JS/TS de navegador, p. ej. Astro/React):
     el `run()` (dev server, build, check…) sí es obligatorio; el adapter
     de depuración del navegador (p. ej. `pwa-chrome` + js-debug) solo se
@@ -74,9 +74,13 @@ con nota de qué faltó.
   - **R4** LSP asignado (diagnósticos, hover, gd, completion, rename).
   - **R5** CMP completion cross-file (imports→símbolos de otros archivos,
     `gd`/hover, fuente `path`).
-- **Modularidad por lenguaje/área**: LSP por servidor en `servers/`,
-  linters en `linter/`, formatters en `formatters/`, DAP en `dap/`. Un
-  archivo por lenguaje.
+- **Arquitectura por lenguaje (spec 002)**: **motores** en `lua/core/`
+  (lsp, format, lint, dap, cmp, treesitter, mason) — infraestructura
+  autónoma que solo lee datos; **fichas** en `lua/languages/<lengua>/` —
+  datos declarativos puros (schema: `filetypes`, `lsp`, `lint`,
+  `format`, `parsers`, `cmp`, `dap`, `tools`, …). Cero requires entre
+  fichas; borrar una carpeta = quitar un lenguaje completo. Ver
+  `specs/tasks/002-arquitectura.md`.
 - **Defensivo**: toda integración externa con `pcall` y retorno temprano si
   falta la dependencia (patrón usado en toda la config).
 - **Sin duplicates**: antes de agregar un linter/server, verificar que no

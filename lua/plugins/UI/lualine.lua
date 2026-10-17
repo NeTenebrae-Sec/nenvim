@@ -109,7 +109,7 @@ local function java_version()
   end
 
   -- 2. Consultar la variable de ejecutable configurada en el plugin de Java
-  local ok_java, java_mod = pcall(require, "plugins.lsp.java")
+  local ok_java, java_mod = pcall(require, "languages.java.core")
   if ok_java and java_mod.current_java_bin then
     local ver = java_mod.current_java_bin:match("java%-(%d+)") or java_mod.current_java_bin:match("jdk%-(%d+)")
     if ver then

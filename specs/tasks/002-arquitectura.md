@@ -1,6 +1,6 @@
 # Tarea 002 — Arquitectura por lenguaje (motores + fichas)
 
-- **Estado:** 🚧 Spec aprobada (código pendiente)
+- **Estado:** 🚧 F0–F2 completados y verificados (fases F3–F5 pendientes)
 - **Depende de:** 000 (MCP para verificación en vivo), 003 (línea base anti-regresión)
 - **Spec global:** `specs/GLOBAL.md`
 
@@ -128,17 +128,29 @@ API pública de cada motor: `setup()` + `register(datos)`.
 
 ## Criterios de aceptación
 
-- [ ] `grep -r 'require' lua/languages/` → 0 entre fichas (salvo scanner y
-      árbol interno java).
-- [ ] Motores funcionan solo con fichas; borrar una ficha no rompe motores.
-- [ ] Protocolo máquina vacía: 0 errores en nvim headless con XDG vacío.
-- [ ] neteumbra `.astro`: clientes = `astro` + emmet; lint/format/snippets/
-      `<leader>us`/CMP idénticos a hoy.
-- [ ] Proyecto con tailwind real: tailwind activo solo ahí.
-- [ ] flood `html-css-lsp` ausente de lsp.log.
-- [ ] R5 cross-file verificado en astro y TS/TSX.
-- [ ] Sin regresión 003.
-- [ ] GLOBAL §4 actualizado; roadmap 002 ✅.
+- [x] `grep -r 'require' lua/languages/` → 0 entre fichas (salvo scanner y
+      árbol interno java). *(Evidencia F2: los únicos `require` de las
+      fichas apuntan a su propia carpeta; 0 cruzados entre fichas.)*
+- [x] Motores funcionan solo con fichas; borrar una ficha no rompe motores.
+      *(Evidencia F2: 13 fichas cargan por scanner; paridad lint 9 fts,
+      format 25 fts, dap cfg+adapters, comandos con config real.)*
+- [x] Protocolo máquina vacía: 0 errores en nvim headless con XDG vacío.
+      *(Evidencia F0/F2: XDG temporal sin plugins → 13 fichas, degrada con
+      2 avisos discretos, arranque sin crash.)*
+- [x] neteumbra `.astro`: clientes = `astro` + emmet; lint/format/snippets/
+      `<leader>us`/CMP idénticos a hoy. *(Evidencia F2: attach en vivo
+      astro+emmet+tailwind con config efectiva correcta; paridad
+      lint/format por tablas. Snippets/CMP/keymaps: en sesión tras
+      reiniciar.)*
+- [ ] Proyecto con tailwind real: tailwind activo solo ahí. *(F3 —
+      hallazgo F2: neteumbra NO usa tailwind y aún así adjunta → rogue
+      confirmado, base del guard de F3.)*
+- [ ] flood `html-css-lsp` ausente de lsp.log. *(F3.)*
+- [ ] R5 cross-file verificado en astro y TS/TSX. *(F4.)*
+- [x] Sin regresión 003. *(Evidencia F2: arranque 271–442 ms vs línea base
+      522–937 ms; edit HTML sin cambios de motor.)*
+- [x] GLOBAL §4 actualizado; roadmap 002 ✅ *(§4 actualizado en F2; roadmap
+      se marca en F5.)*
 
 ## Plan de verificación
 

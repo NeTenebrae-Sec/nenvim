@@ -2,8 +2,8 @@
 -- Motor LSP: capabilities globales + habilitación desde fichas
 -- =========================================================
 -- Diagnósticos y guards viven en sus sub-núcleos. Los servers se
--- definen hoy en plugins/lsp/servers/* (temporal hasta F2 de la 002);
--- las fichas de languages/ se registran aquí automáticamente.
+-- definen como datos en las fichas de languages/ (schema 002):
+-- entry string → solo habilita; entry { name, config } → config+habilita.
 
 local M = {}
 
@@ -31,14 +31,19 @@ vim.lsp.config("*", {
 require("core.lsp.diagnostics")
 require("core.lsp.guards")
 
--- Registro desde fichas de lenguaje (schema 002). Lista vacía en F0.
+-- Registro desde fichas de lenguaje (schema 002)
 local ok_langs, languages = pcall(require, "languages")
 if ok_langs then
   for _, ficha in ipairs(languages.all()) do
     for _, server in ipairs(ficha.lsp or {}) do
-      if type(server) == "table" and server.name and server.config then
-        pcall(vim.lsp.config, server.name, server.config)
-        vim.lsp.enable(server.name)
+      if type(server) == "string" then
+        -- Ya definido por su módulo: solo habilitar
+        pcall(vim.lsp.enable, server)
+      elseif type(server) == "table" and server.name then
+        if server.config then
+          pcall(vim.lsp.config, server.name, server.config)
+        end
+        pcall(vim.lsp.enable, server.name)
       end
     end
   end

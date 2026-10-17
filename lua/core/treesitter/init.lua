@@ -1,9 +1,9 @@
 -- =========================================================
 -- Motor Treesitter: install, highlight, indent, folds
 -- =========================================================
--- En F2 (spec 002) la lista `wanted` se absorbe desde los campos
--- `parsers` de las fichas de languages/; hasta entonces la lista
--- base vive aquí (comportamiento idéntico al módulo anterior).
+-- La lista base (editores de texto del día a día y utilidades)
+-- vive aquí; los parsers específicos de lenguaje llegan de los
+-- campos `parsers` de las fichas de languages/ (schema 002).
 
 local ok, ts = pcall(require, "nvim-treesitter")
 if not ok then
@@ -12,49 +12,28 @@ end
 
 vim.schedule(function()
   local wanted = {
-    -- Base
+    -- Base (editor)
     "lua",
     "vim",
     "vimdoc",
     "query",
     "markdown",
     "markdown_inline",
-
-    -- Shell / sistema
-    "bash",
-    "awk",
-    "make",
-    "cmake",
-
-    -- Lenguajes principales
-    "c",
-    "cpp",
-    "python",
-    "java",
-
-    -- Web
-    "html",
-    "css",
-    "javascript",
-    "typescript",
-    "tsx",
-    "json",
-    "yaml",
-    "toml",
-    "scss",
-    "dockerfile",
-    "graphql",
-    "xml",
-    "svelte",
-    "vue",
-    "astro",
-
-    -- Otros útiles
-    "sql",
     "regex",
     "diff",
     "gitignore",
     "gitcommit",
+
+    -- Sistema / build
+    "awk",
+    "make",
+    "cmake",
+    "dockerfile",
+    "yaml",
+
+    -- Markup / datos
+    "graphql",
+    "xml",
   }
 
   -- Registro desde fichas de lenguaje (schema 002)
