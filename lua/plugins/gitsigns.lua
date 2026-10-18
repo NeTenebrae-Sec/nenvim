@@ -1,6 +1,7 @@
 -- =========================================================
 -- Git signs propio (reemplaza gitsigns.nvim — tarea 012 Fase 2)
--- diff async (`git diff --unified=0`) por buffer, signs vía
+-- diff en tiempo real buffer-vs-HEAD vía `vim.diff` (en proceso,
+-- síncrono) sobre un baseline de HEAD cacheado. signs vía
 -- extmarks en la signcolumn, preview/reset de hunk y blame.
 -- API compatible con los keymaps previos: reset_hunk(range),
 -- preview_hunk(), blame_line(), stats(bufnr) para la statusline.
@@ -42,6 +43,11 @@ local GLYPH_CHANGE = vim.fn.nr2char(0x2503)     -- ┃ (color lo distingue)
 local GLYPH_DELETE = vim.fn.nr2char(0x2581)     -- ▁
 local GLYPH_CHANGEDELETE = vim.fn.nr2char(0x2503) -- ┃
 local GLYPH_UNTRACKED = vim.fn.nr2char(0x2506)  -- ┆
+
+-- Texto del buffer tal como git lo vería (líneas + \n final)
+local function buf_text(bufnr)
+  return table.concat(api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n") .. "\n"
+end
 
 -- =========================================================
 -- Diff parsing
@@ -88,10 +94,9 @@ local function clear(bufnr)
   state[bufnr] = nil
 end
 
-local function apply(bufnr, root, rel, diff_out, status_out)
+local function apply(bufnr, root, rel, diff_text, untracked, baseline)
   clear(bufnr)
-  local hunks = parse_hunks(diff_out and diff_out.stdout)
-  local untracked = status_out and status_out.stdout and status_out.stdout:sub(1, 2) == "??"
+  local hunks = parse_hunks(diff_text)
 
   local stats = { add = 0, change = 0, del = 0 }
 
@@ -132,15 +137,19 @@ local function apply(bufnr, root, rel, diff_out, status_out)
     stats.add = count
   end
 
-  state[bufnr] = { root = root, rel = rel, hunks = hunks, stats = stats }
+  state[bufnr] = { root = root, rel = rel, hunks = hunks, stats = stats, untracked = untracked, baseline = baseline }
 
   api.nvim_exec_autocmds("User", { pattern = "NvimGitSignsUpdate", modeline = false })
 end
 
 -- =========================================================
--- Update (async, debounceado)
+-- Update (en tiempo real, con baseline HEAD cacheado)
 -- =========================================================
-local function run_update(bufnr)
+-- Vía rápida (sync): si ya hay baseline de HEAD para este root/rel,
+-- diff buffer-vs-HEAD con vim.diff en proceso — instantáneo al editar.
+-- Vía fetch (async): si no hay baseline (primer load, o force), obtiene
+-- `git show HEAD:<rel>` + `git status` y cachea; luego aplica.
+local function run_update(bufnr, force)
   if not api.nvim_buf_is_valid(bufnr) then
     return
   end
@@ -164,8 +173,17 @@ local function run_update(bufnr)
   local root = vim.fs.dirname(git_dir)
   local rel = file:sub(#root + 2)
 
+  local s = state[bufnr]
+  if not force and s and s.root == root and s.rel == rel and s.baseline ~= nil then
+    -- Vía rápida: sync contra baseline cacheado
+    local ok, diff = pcall(vim.diff, s.baseline, buf_text(bufnr), { result_type = "unified", ctxlen = 0 })
+    apply(bufnr, root, rel, ok and diff or nil, s.untracked, s.baseline)
+    return
+  end
+
+  -- Vía fetch: baseline HEAD + untracked (async)
   local pending = 2
-  local diff_out, status_out
+  local baseline, untracked
   local function finish()
     pending = pending - 1
     if pending > 0 then
@@ -174,15 +192,25 @@ local function run_update(bufnr)
     if not api.nvim_buf_is_valid(bufnr) then
       return
     end
-    apply(bufnr, root, rel, diff_out, status_out)
+    local diff
+    if baseline then
+      local ok
+      ok, diff = pcall(vim.diff, baseline, buf_text(bufnr), { result_type = "unified", ctxlen = 0 })
+      if not ok then
+        diff = nil
+      end
+    end
+    apply(bufnr, root, rel, diff, untracked, baseline)
   end
 
-  local ok1 = pcall(vim.system, { "git", "-C", root, "diff", "--unified=0", "--no-color", "--no-ext-diff", "HEAD", "--", rel }, { text = true }, function(out)
-    diff_out = out
+  local ok1 = pcall(vim.system, { "git", "-C", root, "show", "HEAD:" .. rel }, { text = true }, function(out)
+    if out.code == 0 then
+      baseline = out.stdout
+    end
     vim.schedule(finish)
   end)
   local ok2 = pcall(vim.system, { "git", "-C", root, "status", "--porcelain=v1", "--", rel }, { text = true }, function(out)
-    status_out = out
+    untracked = out.stdout and out.stdout:sub(1, 2) == "??"
     vim.schedule(finish)
   end)
   if not (ok1 and ok2) then
@@ -190,11 +218,11 @@ local function run_update(bufnr)
   end
 end
 
-function M.update(bufnr)
-  run_update(bufnr or api.nvim_get_current_buf())
+function M.update(bufnr, force)
+  run_update(bufnr or api.nvim_get_current_buf(), force)
 end
 
-local function schedule_update(bufnr)
+local function schedule_update(bufnr, force)
   local old = timers[bufnr]
   timers[bufnr] = nil
   if old and not old:is_closing() then
@@ -209,7 +237,7 @@ local function schedule_update(bufnr)
       t:stop()
       t:close()
     end
-    run_update(bufnr)
+    run_update(bufnr, force)
   end))
 end
 
@@ -337,32 +365,23 @@ function M.reset_hunk(range)
     return
   end
 
-  local patch = {
-    "diff --git a/" .. s.rel .. " b/" .. s.rel,
-    "--- a/" .. s.rel,
-    "+++ b/" .. s.rel,
-  }
+  -- Revertir en el buffer contra HEAD (no en disco): para cada hunk de
+  -- abajo hacia arriba (evita desplazar posiciones), reemplazar las
+  -- líneas del hunk por las del baseline (las líneas '-' del body).
+  table.sort(targets, function(a, b)
+    return a.new_s > b.new_s
+  end)
   for _, h in ipairs(targets) do
-    table.insert(patch, h.header)
+    local old = {}
     for _, l in ipairs(h.body) do
-      table.insert(patch, l)
+      if l:sub(1, 1) == "-" then
+        old[#old + 1] = l:sub(2)
+      end
     end
+    pcall(api.nvim_buf_set_lines, bufnr, h.new_s - 1, h.new_s - 1 + h.new_c, false, old)
   end
 
-  local ok = pcall(vim.system, { "git", "-C", s.root, "apply", "--reverse", "--unidiff-zero", "--whitespace=nowarn", "-" }, {
-    stdin = table.concat(patch, "\n") .. "\n",
-    text = true,
-  }, function(out)
-    vim.schedule(function()
-      if out.code ~= 0 then
-        vim.notify("GitSigns: reset failed — " .. (out.stderr or "unknown error"), vim.log.levels.WARN)
-      end
-      run_update(bufnr)
-    end)
-  end)
-  if not ok then
-    vim.notify("GitSigns: git not available", vim.log.levels.WARN)
-  end
+  run_update(bufnr, false)
 end
 
 function M.blame_line()
@@ -434,14 +453,27 @@ end
 -- Setup: autocmds de actualización
 -- =========================================================
 local group = api.nvim_create_augroup("NvimGitSigns", { clear = true })
-for _, ev in ipairs({ "BufEnter", "BufWritePost", "InsertLeave", "TextChanged", "TextChangedI", "FileType", "DirChanged" }) do
+
+-- Tier 1: refetch baseline de HEAD (puede haber cambiado) + refresh
+for _, ev in ipairs({ "BufEnter", "BufWritePost", "FileType", "DirChanged" }) do
   api.nvim_create_autocmd(ev, {
     group = group,
     callback = function(args)
-      schedule_update(args.buf)
+      schedule_update(args.buf, true)
     end,
   })
 end
+
+-- Tier 2: edición en tiempo real — refresh síncrono contra baseline cacheado
+for _, ev in ipairs({ "InsertLeave", "TextChanged", "TextChangedI" }) do
+  api.nvim_create_autocmd(ev, {
+    group = group,
+    callback = function(args)
+      schedule_update(args.buf, false)
+    end,
+  })
+end
+
 api.nvim_create_autocmd("BufWipeout", {
   group = group,
   callback = function(args)
@@ -452,7 +484,7 @@ api.nvim_create_autocmd("BufWipeout", {
 vim.api.nvim_create_autocmd("VimEnter", {
   group = group,
   callback = function()
-    schedule_update(api.nvim_get_current_buf())
+    schedule_update(api.nvim_get_current_buf(), true)
   end,
 })
 
