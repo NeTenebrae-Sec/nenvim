@@ -33,6 +33,17 @@ api.nvim_set_hl(0, "GitSignsPreviewAdd", { link = "DiagnosticOk", default = true
 api.nvim_set_hl(0, "GitSignsPreviewDel", { link = "DiagnosticError", default = true })
 
 -- =========================================================
+-- Glyphs de sign (box-drawing Unicode vía nr2char)
+-- ASCII puro en el fuente (no se pierden al escribir) y
+-- renderizan en cualquier font monoespaciada, sin Nerd Font.
+-- =========================================================
+local GLYPH_ADD = vim.fn.nr2char(0x2503)        -- ┃
+local GLYPH_CHANGE = vim.fn.nr2char(0x2503)     -- ┃ (color lo distingue)
+local GLYPH_DELETE = vim.fn.nr2char(0x2581)     -- ▁
+local GLYPH_CHANGEDELETE = vim.fn.nr2char(0x2503) -- ┃
+local GLYPH_UNTRACKED = vim.fn.nr2char(0x2506)  -- ┆
+
+-- =========================================================
 -- Diff parsing
 -- =========================================================
 local function parse_hunks(stdout)
@@ -88,21 +99,21 @@ local function apply(bufnr, root, rel, diff_out, status_out)
     if h.old_c == 0 then
       -- Adición pura
       for i = 0, h.new_c - 1 do
-        place(bufnr, h.new_s + i, "", "GitSignsAdd")
+        place(bufnr, h.new_s + i, GLYPH_ADD, "GitSignsAdd")
       end
       stats.add = stats.add + h.new_c
     elseif h.new_c == 0 then
       -- Borrado: sign en la línea donde ocurrió
       if h.new_s == 0 then
-        place(bufnr, 1, "", "GitSignsDelete")
+        place(bufnr, 1, GLYPH_DELETE, "GitSignsDelete")
       else
-        place(bufnr, h.new_s, "", "GitSignsDelete")
+        place(bufnr, h.new_s, GLYPH_DELETE, "GitSignsDelete")
       end
       stats.del = stats.del + h.old_c
     else
       -- Cambio (posiblemente changedelete)
       local hl = (h.old_c > h.new_c) and "GitSignsChangedelete" or "GitSignsChange"
-      local glyph = (hl == "GitSignsChangedelete") and "" or ""
+      local glyph = (hl == "GitSignsChangedelete") and GLYPH_CHANGEDELETE or GLYPH_CHANGE
       for i = 0, h.new_c - 1 do
         place(bufnr, h.new_s + i, glyph, hl)
       end
@@ -116,7 +127,7 @@ local function apply(bufnr, root, rel, diff_out, status_out)
   if untracked and #hunks == 0 then
     local count = math.min(api.nvim_buf_line_count(bufnr), UNTRACKED_MAX)
     for i = 1, count do
-      place(bufnr, i, "", "GitSignsUntracked")
+      place(bufnr, i, GLYPH_UNTRACKED, "GitSignsUntracked")
     end
     stats.add = count
   end
