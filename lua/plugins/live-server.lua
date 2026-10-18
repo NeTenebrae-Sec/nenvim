@@ -75,13 +75,24 @@ local function get_intelligent_project_root()
 
   local current_dir = vim.fs.dirname(current_file)
 
-  -- Look for a .git directory going upwards from the current file
-  local git_ancestor = vim.fs.find(".git", { path = current_dir, upward = true })[1]
-  if git_ancestor then
-    return vim.fs.dirname(git_ancestor)
+  -- Marcadores de proyecto hacia arriba, en orden: configs de framework
+  -- (cubre scaffolds astro/next sin git), luego package.json/.git.
+  -- Mismo criterio que los root_markers de los motores LSP.
+  local framework_cfgs = {
+    "astro.config.mjs", "astro.config.js", "astro.config.ts", "astro.config.cjs",
+    "next.config.mjs", "next.config.js", "next.config.ts", "next.config.cjs",
+  }
+  local found = vim.fs.find(framework_cfgs, { path = current_dir, upward = true })[1]
+  if found then
+    return vim.fs.dirname(found)
   end
 
-  -- Not a git repo, use the parent directory of the current file
+  found = vim.fs.find({ "package.json", ".git" }, { path = current_dir, upward = true })[1]
+  if found then
+    return vim.fs.dirname(found)
+  end
+
+  -- Sin manifiesto (web estática): el directorio del propio archivo
   return current_dir
 end
 
