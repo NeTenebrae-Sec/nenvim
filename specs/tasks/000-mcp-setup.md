@@ -41,10 +41,11 @@ plugins).
 - [x] `lua/config/rpc.lua` carga sin errores (verificado en nvim headless:
       `rpc.lua OK`) — _evidencia: test headless 2026-10-17._
 - [x] `init.lua` carga `config.rpc` (parse OK) — _evidencia: test headless._
-- [ ] **Usuario:** abrir nvim y confirmar conexión — _2026-10-17: el server
-      MCP responde (`connect` devuelve "No Neovim instances found"), pero no
-      hay instancia corriendo; falta que el usuario abra nvim para probar
-      el socket real._
+- [x] **Usuario:** abrir nvim y confirmar conexión — _2026-10-17:
+      instancia viva conectada vía MCP — `get_state_brief`/`get_state`
+      devuelven la sesión real del usuario (cwd neteumbra, buffer
+      `src/pages/404.astro`, modo normal); lecturas operativas todo el
+      día (socket en `$XDG_RUNTIME_DIR/nvim-mcp.sock`)._
 
 ### C. Reglas de agente
 
