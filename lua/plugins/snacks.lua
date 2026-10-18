@@ -50,7 +50,14 @@ local headers = {
 }
 
 snacks.setup({
-  bigfile = { enabled = true },
+  -- Umbral alto: archivos ≤5 MB con líneas normales trabajan con todo
+  -- (LSP/lint/treesitter); la red de seguridad nativa (ft "bigfile")
+  -- solo actúa sobre >5 MB o minificados extremos (línea media >4000)
+  bigfile = {
+    enabled = true,
+    size = 5 * 1024 * 1024,
+    line_length = 4000,
+  },
   quickfile = { enabled = true },
   toggle = { enabled = true },
 
@@ -275,3 +282,45 @@ snacks.setup({
     },
   },
 })
+
+-- =========================================================
+-- :Toggles — picker de toggles del editor (estilo sección multiple)
+-- =========================================================
+-- Lista los toggles registrados de snacks (instancia los built-in de
+-- rendimiento al abrir, idempotente por id) y alterna el elegido en
+-- bucle. La UI es vim.ui.select → picker de snacks (ui_select on).
+-- Sin LSP: esta versión de snacks no trae toggle de clientes.
+vim.api.nvim_create_user_command("Toggles", function()
+  local builtin_ids = {
+    "treesitter", "diagnostics", "inlay_hints", "indent", "dim",
+    "words", "scroll", "animate", "line_number",
+  }
+  for _, id in ipairs(builtin_ids) do
+    pcall(snacks.toggle.get, id)
+  end
+
+  local items = {}
+  for _, t in pairs(snacks.toggle.toggles) do
+    items[#items + 1] = t
+  end
+  table.sort(items, function(a, b)
+    return a.opts.name < b.opts.name
+  end)
+
+  vim.ui.select(items, {
+    prompt = "Toggles",
+    format_item = function(t)
+      local icon = t.opts.icon
+      if type(icon) == "table" then
+        icon = t:get() and icon.enabled or icon.disabled
+      end
+      return icon .. " " .. t.opts.name
+    end,
+  }, function(choice)
+    if not choice then
+      return
+    end
+    choice:toggle()
+    vim.cmd("Toggles") -- reabrir para seguir alternando
+  end)
+end, { desc = "Picker de toggles del editor" })

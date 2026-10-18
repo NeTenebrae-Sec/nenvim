@@ -131,6 +131,7 @@ con nota de qué faltó.
 | 006 | NextJS | ✅ Completada (ver `specs/tasks/006-nextjs.md`) |
 | 007 | Bases (HTML/CSS/JSON/YAML/Lua/MD) | ✅ Completada (ver `specs/tasks/007-bases.md`) |
 | 008 | Refinamientos globales (flood html-css, stack TS único, semantic tokens, tailwind/html-css sobrantes) | ✅ Completada (ver `specs/tasks/008-refinamientos.md`) |
+| 009 | Live-server sin `.git`, bigfile suave (`:Toggles`) y guard de rainbow en buffers grandes | ✅ Completada (ver `specs/tasks/009-bigfile-y-live-server.md`) |
 
 > La tarea **002 (toolchain)** es el marco que absorbe las excepciones
 > actuales (plugins que se wiring solos: `html-css-lsp`, otter) y hace que
