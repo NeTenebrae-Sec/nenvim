@@ -21,6 +21,9 @@ local modules = {
   bufremove = {},
   align = {},
 
+  -- Iconos para snacks (explorer/picker usan MiniIcons como fuente)
+  icons = {},
+
   move = {
     options = {
       reindent_linewise = true,

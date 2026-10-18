@@ -12,13 +12,37 @@ local function esc(s)
   return (tostring(s):gsub("%%", "%%%%"))
 end
 
+-- Icono vía mini.icons (opcional, sin él se muestra solo el nombre)
+local function icon_for(name)
+  local ok, icons = pcall(require, "mini.icons")
+  if not ok then
+    return ""
+  end
+  local ext = name:match("%.(%w+)$")
+  if ext then
+    local okg, glyph = pcall(icons.get, "extension", ext)
+    if okg and glyph and glyph ~= "" then
+      return glyph .. " "
+    end
+  end
+  local ft = vim.filetype.match({ filename = name })
+  if ft then
+    local okg, glyph = pcall(icons.get, "filetype", ft)
+    if okg and glyph and glyph ~= "" then
+      return glyph .. " "
+    end
+  end
+  return ""
+end
+
 function M.render()
   local current = api.nvim_get_current_buf()
   local parts = {}
 
   for _, b in ipairs(api.nvim_list_bufs()) do
     if api.nvim_buf_is_loaded(b) and vim.bo[b].buflisted and vim.bo[b].buftype == "" then
-      local name = vim.fn.fnamemodify(api.nvim_buf_get_name(b), ":t")
+      local full = api.nvim_buf_get_name(b)
+      local name = vim.fn.fnamemodify(full, ":t")
       if name == "" then
         name = "[No Name]"
       end
@@ -29,10 +53,11 @@ function M.render()
       if vim.bo[b].readonly then
         flags = flags .. " "
       end
+      local icon = icon_for(name)
       if b == current then
-        parts[#parts + 1] = "%#TabLineSel# " .. esc(name) .. flags .. " "
+        parts[#parts + 1] = "%#TabLineSel# " .. icon .. esc(name) .. flags .. " "
       else
-        parts[#parts + 1] = "%#TabLine# " .. esc(name) .. flags .. " "
+        parts[#parts + 1] = "%#TabLine# " .. icon .. esc(name) .. flags .. " "
       end
     end
   end

@@ -41,6 +41,9 @@ local function setup_hl()
   -- Progreso / posición
   set(0, "NlProgress", { fg = "#92a7b5", bg = "#172129" })
   set(0, "NlLocation", { fg = "#05080a", bg = "#4ba3db", bold = true })
+  -- Separadores de bloque
+  set(0, "NlSep", { fg = "#245066", bg = "#172129" })
+  set(0, "NlSepFile", { fg = "#245066", bg = "#10171c" })
 end
 setup_hl()
 
@@ -153,9 +156,21 @@ local function diff_str(buf)
 end
 
 local function filename_str(buf)
-  local name = vim.fn.fnamemodify(api.nvim_buf_get_name(buf), ":t")
+  local full = api.nvim_buf_get_name(buf)
+  local name = vim.fn.fnamemodify(full, ":t")
   if name == "" then
     name = "[No Name]"
+  end
+  -- Icono vía mini.icons (opcional)
+  local icon = ""
+  local ok_icons, icons = pcall(require, "mini.icons")
+  if ok_icons then
+    local ext = name:match("%.(%w+)$")
+    local ft = ext and vim.filetype.match({ filename = name }) or nil
+    local okg, glyph = pcall(icons.get, ext and "extension" or "filetype", ext or ft or "")
+    if okg and glyph and glyph ~= "" then
+      icon = glyph .. " "
+    end
   end
   local flags = ""
   if vim.bo[buf].modified then
@@ -164,7 +179,7 @@ local function filename_str(buf)
   if vim.bo[buf].readonly then
     flags = flags .. " "
   end
-  return "%#NlFile#  " .. esc(name) .. flags .. "  "
+  return "%#NlFile# " .. icon .. esc(name) .. flags .. " "
 end
 
 local function active_lsp_servers()
@@ -290,33 +305,39 @@ function M.render()
   local buf = api.nvim_get_current_buf()
   local m = vim.api.nvim_get_mode().mode:sub(1, 1)
   local root = project_root()
+  local mode_hl = MODE_HL[m] or "NlModeNormal"
   local proj_hl = MODE_PROJ[m] or "NlProject"
 
-  local parts = {
-    "%#" .. (MODE_HL[m] or "NlModeNormal") .. "# " .. (MODE_TXT[m] or m:upper()) .. " ",
-    "%#" .. proj_hl .. "#  " .. esc(vim.fn.fnamemodify(root, ":t")) .. " ",
+  -- Bloque izquierdo: modo · proyecto/rama/diff · archivo
+  local left = {
+    "%#" .. mode_hl .. "# " .. (MODE_TXT[m] or m:upper()) .. " ",
+    "%#" .. proj_hl .. "# " .. esc(vim.fn.fnamemodify(root, ":t")),
   }
-
   local branch = branch_str(root)
   if branch ~= "" then
-    parts[#parts + 1] = "%#" .. proj_hl .. "#  " .. esc(branch) .. " "
+    left[#left + 1] = "%#NlSep#│%#" .. proj_hl .. "# " .. esc(branch)
   end
-  parts[#parts + 1] = diff_str(buf)
-  parts[#parts + 1] = "%#" .. proj_hl .. "# "
+  local diff = diff_str(buf)
+  if diff ~= "" then
+    left[#left + 1] = "%#NlSep#│" .. diff
+  end
+  left[#left + 1] = "%#NlSepFile#│ " .. filename_str(buf)
 
-  parts[#parts + 1] = filename_str(buf)
-  parts[#parts + 1] = java_version()
-  parts[#parts + 1] = vite_status()
-  parts[#parts + 1] = active_lsp_servers()
-  parts[#parts + 1] = diagnostics_str(buf)
+  -- Bloque derecho (alineado al extremo con %=): extras · posición
+  local right = {
+    java_version(),
+    vite_status(),
+    active_lsp_servers(),
+    diagnostics_str(buf),
+  }
   if vim.bo.filetype ~= "" then
-    parts[#parts + 1] = "%#NlFile#" .. esc(vim.bo.filetype) .. "  "
+    right[#right + 1] = "%#NlFile#" .. esc(vim.bo.filetype) .. " "
   end
+  local cursor = api.nvim_win_get_cursor(0)
+  right[#right + 1] = "%#NlProgress# %P "
+  right[#right + 1] = "%#NlLocation# " .. cursor[1] .. ":" .. cursor[2] .. " "
 
-  parts[#parts + 1] = "%#NlProgress# %P "
-  parts[#parts + 1] = "%#NlLocation# " .. api.nvim_win_get_cursor(0)[1] .. ":" .. api.nvim_win_get_cursor(0)[2] .. " "
-
-  return table.concat(parts) .. "%#StatusLine#"
+  return table.concat(left) .. "%=" .. table.concat(right) .. "%#StatusLine#"
 end
 
 -- =========================================================
