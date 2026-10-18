@@ -4,9 +4,11 @@
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "servers": {
+      // --offline: uv usa su caché local (nvim-mcp 1.1.1) — el server MCP
+      // no debe caerse con un corte de red/DNS (incidente 2026-10-17).
       "nvim-mcp": {
         "type": "local",
-        "command": ["uvx", "nvim-mcp"],
+        "command": ["uvx", "--offline", "nvim-mcp"],
         "environment": {
           "NVIM_ADDRESS": "{env:XDG_RUNTIME_DIR}/nvim-mcp.sock"
         }

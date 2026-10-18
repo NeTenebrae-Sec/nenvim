@@ -46,6 +46,13 @@ plugins).
       devuelven la sesión real del usuario (cwd neteumbra, buffer
       `src/pages/404.astro`, modo normal); lecturas operativas todo el
       día (socket en `$XDG_RUNTIME_DIR/nvim-mcp.sock`)._
+- [x] Server MCP inmune a cortes de red — _2026-10-17: incidente real —
+      DNS caído → `uvx nvim-mcp` no resolvía PyPI, el puente moría
+      (exit 2) y opencode descartaba las tools nvim-mcp de la sesión.
+      Fix: `command` → `["uvx", "--offline", "nvim-mcp"]` (caché local
+      de uv, nvim-mcp 1.1.1, sin red). Evidencia: `uvx --offline
+      nvim-mcp` exit 0 con red caída; `opencode mcp list` →
+      `✓ nvim-mcp connected` + tools restauradas en la sesión._
 
 ### C. Reglas de agente
 
