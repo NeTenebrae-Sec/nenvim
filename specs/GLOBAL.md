@@ -91,7 +91,7 @@ con nota de qué faltó.
   JavaScript, TypeScript, Tailwind, Astro, React, Svelte, NextJS,
   NodeJS, Java, SpringBoot, Zsh, Bash, C, Python. Todas tienen ficha
   hoy: `html-css` (HTML/CSS/Tailwind), `node-ts` (JS/TS/Node), `astro`
-  (001 🚧), `react` ✅, `nextjs` ✅, `java` (+ tooling Spring:
+  (001 ✅), `react` ✅, `nextjs` ✅, `java` (+ tooling Spring:
   `JavaInit`/`JavaAddDependencies`), `svelte`, `bash` (**incluye
   `zsh`**), `c`, `python`. Las fichas fuera de la lista (`json`,
   `yaml`, `lua`, `markdown`, `sql`, `vue`) se mantienen igual.
@@ -143,7 +143,7 @@ con nota de qué faltó.
 | ID | Tarea | Estado |
 | --- | --- | --- |
 | 000 | Setup MCP (nvim-mcp + socket + reglas de agente) | ✅ Completada |
-| 001 | Astro al 100% | 🚧 Casi completa (ver `specs/tasks/001-astro-100.md` §I) |
+| 001 | Astro al 100% | ✅ Completada (ver `specs/tasks/001-astro-100.md`) |
 | 002 | Arquitectura por lenguaje: motores core/ + fichas languages/ (R0 comunidad) | ✅ Completada (ver `specs/tasks/002-arquitectura.md`) |
 | 003 | Rendimiento (línea base: 4,6 s arranque / 1,06 s edit HTML 12k → objetivo <2 s / <400 ms) | ✅ Completada (ver `specs/tasks/003-rendimiento.md`) |
 | 004 | Node.js / TypeScript | ✅ Absorbida por 002 (ver `specs/tasks/004-node-ts.md`) |
