@@ -39,7 +39,6 @@ return {
 
     -- LSP / Tools Core
     { url = "https://github.com/hrsh7th/cmp-nvim-lsp", dest = "start/cmp-nvim-lsp" },
-    { url = "https://github.com/neovim/nvim-lspconfig", dest = "start/nvim-lspconfig" },
     { url = "https://github.com/williamboman/mason.nvim", dest = "start/mason.nvim" },
     {
       url = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim",
@@ -70,8 +69,6 @@ return {
     -- Debugging (DAP)
     { url = "https://github.com/mfussenegger/nvim-dap", dest = "start/nvim-dap" },
     { url = "https://github.com/rcarriga/nvim-dap-ui", dest = "start/nvim-dap-ui" },
-    { url = "https://github.com/jay-babu/mason-nvim-dap.nvim", dest = "start/mason-nvim-dap.nvim" },
-    { url = "https://github.com/mxsdev/nvim-dap-vscode-js", dest = "start/nvim-dap-vscode-js" },
     { url = "https://github.com/nvim-neotest/nvim-nio", dest = "start/nvim-nio" },
   },
 }
