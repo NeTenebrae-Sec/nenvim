@@ -31,6 +31,23 @@ if ok_langs then
   end
 end
 
+-- Filtro R0 (degradación discreta): un linter cuyo binario no existe —
+-- p. ej. `eslint` en un proyecto que no lo instala — se omite en silencio.
+-- Sin este filtro, nvim-lint lo spawnea igual y notifica un ERROR
+-- ("Error running eslint: ENOENT…") en cada lint del buffer.
+local function cmd_resolvable(name)
+  local def = lint.linters[name]
+  local cmd = def and def.cmd
+  if type(cmd) == "function" then
+    local ok_cmd, res = pcall(cmd)
+    cmd = ok_cmd and res or nil
+  end
+  if type(cmd) ~= "string" then
+    return true -- sin cmd resoluble: no filtrar a ciegas
+  end
+  return vim.fn.executable(cmd) == 1
+end
+
 -- Autocomando global para ejecutar nvim-lint
 local group = vim.api.nvim_create_augroup("NvimLintConfig", { clear = true })
 
@@ -46,7 +63,14 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "InsertLeave" }, {
     end
 
     vim.schedule(function()
-      lint.try_lint()
+      local names = lint.linters_by_ft[vim.bo.filetype]
+      if type(names) == "table" then
+        names = vim.tbl_filter(cmd_resolvable, names)
+        if #names == 0 then
+          return
+        end
+      end
+      lint.try_lint(names)
     end)
   end,
 })

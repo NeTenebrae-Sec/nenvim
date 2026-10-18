@@ -165,6 +165,14 @@ API pública de cada motor: `setup()` + `register(datos)`.
 - [x] GLOBAL §4 actualizado; roadmap 002 ✅. *(Evidencia F5: §4 con
       arquitectura motores/fichas, R2 actualizado y tabla DoD por
       lenguaje con evidencia; roadmap 002 marcado ✅.)*
+- [x] R0 en lint: un linter sin binario se omite en silencio, sin
+      notificación ERROR. *(Evidencia: filtro `cmd_resolvable` en
+      `core/lint/init.lua` antes de `try_lint()` — probe con spy de
+      `vim.uv.spawn` antes/después: proyecto sin eslint (demo, cwd sin
+      `node_modules/.bin`) → `error_notifies=1 → 0` y
+      `eslint_spawns=1 → 0` (omitido); neteumbra →
+      `eslint_resolved=node_modules/.bin/eslint exec=1`,
+      `error_notifies=0`, `eslint_spawns=1` (sigue lintiendolo).)*
 
 ## Plan de verificación
 
