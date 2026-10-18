@@ -43,32 +43,11 @@ function M.setup(c, set)
   set("NoiceCmdlinePrompt", { fg = c.cyan1, bold = true })
 
   -- =======================================================
-  -- BUFFERLINE
+  -- TABLINE (propia — reemplaza bufferline, tarea 012)
   -- =======================================================
-  set("BufferLineBufferSelected", { fg = c.white, bg = c.bg2, bold = true })
-  set("BufferLineBuffer", { fg = c.fg2, bg = c.bg1 })
-  set("BufferLineBackground", { fg = c.fg2, bg = c.bg1 })
-  set("BufferLineFill", { bg = c.bg0 })
-  set("BufferLineSeparator", { fg = c.bg0, bg = c.bg1 })
-  set("BufferLineSeparatorSelected", { fg = c.bg0, bg = c.bg2 })
-  set("BufferLineModified", { fg = c.blue, bg = c.bg1 })
-  set("BufferLineModifiedSelected", { fg = c.cyan1, bg = c.bg2, bold = true })
-
-  -- =======================================================
-  -- LUALINE
-  -- =======================================================
-  set("lualine_a_normal", { fg = c.bg0, bg = c.cyan1, bold = true })
-  set("lualine_a_insert", { fg = c.bg0, bg = c.teal, bold = true })
-  set("lualine_a_visual", { fg = c.bg0, bg = c.purple, bold = true })
-  set("lualine_a_replace", { fg = c.bg0, bg = c.blue, bold = true })
-  set("lualine_a_command", { fg = c.bg0, bg = c.ice, bold = true })
-
-  set("lualine_b_normal", { fg = c.cyan1, bg = c.bg2 })
-  set("lualine_b_insert", { fg = c.teal, bg = c.bg2 })
-  set("lualine_b_visual", { fg = c.purple, bg = c.bg2 })
-
-  set("lualine_c_normal", { fg = c.fg1, bg = c.bg1 })
-  set("lualine_c_insert", { fg = c.fg1, bg = c.bg1 })
+  set("TabLine", { fg = c.fg2, bg = c.bg1 })
+  set("TabLineSel", { fg = c.white, bg = c.bg2, bold = true })
+  set("TabLineFill", { bg = c.bg0 })
 
   -- =======================================================
   -- SNACKS DASHBOARD

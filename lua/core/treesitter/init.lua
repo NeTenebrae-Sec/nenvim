@@ -92,27 +92,6 @@ vim.opt.foldenable = false
 vim.opt.foldlevel = 99
 
 -- =========================================================
--- 👑 STICKY SCROLL (Contexto superior al bajar)
--- =========================================================
-local ok_context, context = pcall(require, "treesitter_context")
-if ok_context then
-  context.setup({
-    enable = true,
-    max_lines = 4,
-    min_window_height = 0,
-    line_numbers = true,
-    multiline_threshold = 1,
-    trim_scope = "outer",
-    mode = "cursor",
-
-    -- 🛠️ FIX DEFINITIVO EN NEOVIM 0.12:
-    on_attach = function(buf)
-      pcall(vim.diagnostic.enable, false, { bufnr = buf })
-      return true
-    end,
-  })
-end
--- =========================================================
 -- 🏷️ AUTO CLOSE TAG (Solo abre y cierra)
 -- =========================================================
 local ok_autotag, autotag = pcall(require, "nvim-ts-autotag")

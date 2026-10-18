@@ -15,19 +15,19 @@ M.messages = {
 -- ==========================================================================
 
 M.modules = {
-  -- UI (lua/plugins/UI/)
-  "plugins.UI.lualine",
-  "plugins.UI.devicons",
+  -- UI propia (tarea 012: statusline/tabline/gitsigns/rainbow/context caseros)
+  "plugins.statusline",
+  "plugins.tabline",
   "plugins.UI.smear_cursor",
-  "plugins.UI.bufferline",
-  "plugins.UI.gitsigns",
   "plugins.UI.noice",
-  "plugins.UI.rainbow",
   "plugins.UI.render-markdown",
   "plugins.UI.ccc",
 
   -- Core Utilities (lua/plugins/)
   "core.treesitter",
+  "plugins.rainbow",
+  "plugins.context",
+  "plugins.gitsigns",
   "plugins.mini",
   "plugins.snacks",
   "plugins.flash",

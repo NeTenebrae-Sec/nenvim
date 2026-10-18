@@ -6,30 +6,19 @@ local pack_path = vim.fn.stdpath("data") .. "/site/pack/plugins"
 return {
   path = pack_path,
   list = {
-    { url = "https://github.com/sphamba/smear-cursor.nvim", dest = "start/smear-cursor.nvim" },
-
     -- LSP / Tools Core
     { url = "https://github.com/mfussenegger/nvim-jdtls", dest = "start/nvim-jdtls" },
 
-    -- Treesitter & Context
-    {
-      url = "https://github.com/nvim-treesitter/nvim-treesitter",
-      dest = "start/nvim-treesitter",
-      build = "TSUpdate",
-    },
+    -- Treesitter
+    { url = "https://github.com/nvim-treesitter/nvim-treesitter", dest = "start/nvim-treesitter", build = "TSUpdate" },
     { url = "https://github.com/windwp/nvim-ts-autotag", dest = "start/nvim-ts-autotag" },
-    { url = "https://github.com/nvim-treesitter/nvim-treesitter-context", dest = "start/nvim-treesitter-context" },
-    { url = "https://github.com/hiphish/rainbow-delimiters.nvim", dest = "start/rainbow-delimiters.nvim" },
 
     { url = "https://github.com/folke/flash.nvim", dest = "start/flash.nvim" },
 
-    -- UI Components
-    { url = "https://github.com/nvim-tree/nvim-web-devicons", dest = "start/nvim-web-devicons" },
-    { url = "https://github.com/lewis6991/gitsigns.nvim", dest = "start/gitsigns.nvim" },
+    -- UI candy (pendiente de reimplementación propia — tarea 012 Fase 4)
+    { url = "https://github.com/sphamba/smear-cursor.nvim", dest = "start/smear-cursor.nvim" },
     { url = "https://github.com/MunifTanjim/nui.nvim", dest = "start/nui.nvim" },
     { url = "https://github.com/MeanderingProgrammer/render-markdown.nvim", dest = "start/render-markdown.nvim" },
-    { url = "https://github.com/nvim-lualine/lualine.nvim", dest = "start/lualine.nvim" },
-    { url = "https://github.com/akinsho/bufferline.nvim", dest = "start/bufferline.nvim" },
     { url = "https://github.com/folke/noice.nvim", dest = "start/noice.nvim" },
     { url = "https://github.com/uga-rosa/ccc.nvim", dest = "start/ccc.nvim" },
     { url = "https://github.com/gorbit99/codewindow.nvim", dest = "start/codewindow.nvim" },

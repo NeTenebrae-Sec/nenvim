@@ -66,17 +66,22 @@ nmap("<leader>gg", function()
   end
   Snacks.lazygit()
 end, "Git: Lazygit")
-nmap("<leader>gb", "<cmd>Gitsigns blame_line<CR>", "Git: Blame Line")
+nmap("<leader>gb", function()
+  local ok, gitsigns = pcall(require, "plugins.gitsigns")
+  if ok then
+    gitsigns.blame_line()
+  end
+end, "Git: Blame Line")
 
 nmap("<leader>gr", function()
-  local ok, gitsigns = pcall(require, "gitsigns")
+  local ok, gitsigns = pcall(require, "plugins.gitsigns")
   if ok then
     gitsigns.reset_hunk()
   end
 end, "Git: Reset Hunk / Line under cursor")
 
 vmap("<leader>gr", function()
-  local ok, gitsigns = pcall(require, "gitsigns")
+  local ok, gitsigns = pcall(require, "plugins.gitsigns")
   if ok then
     gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
   end
