@@ -101,7 +101,7 @@ con nota de qué faltó.
 
   | Lenguaje | R1 live | R2 runner | R3 lint | R4 LSP | R5 CMP | R6 format |
   | --- | --- | --- | --- | --- | --- | --- |
-  | astro | ✅ 001 | ✅ 001 | ✅ eslint | ✅ 002 F2 | ✅ 002 F4 | parcial (001 E) |
+  | astro | ✅ 001 | ✅ 001 | ✅ eslint | ✅ 002 F2 | ✅ 002 F4 | ✅ 001 E |
   | node-ts | ✅ 001 | paridad | ✅ oxlint | ✅ 002 F2 | ✅ 002 F4 | — |
   | html-css | paridad | n/a (web) | ✅ markuplint/stylelint | ✅ 002 F2 | ✅ html_ids | — |
   | java | — | paridad | n/a | ✅ jdtls (001–WIP) | — | — |
@@ -110,13 +110,13 @@ con nota de qué faltó.
   | yaml | — | — | — | ✅ yamlls (007) | — | — |
   | lua/python/c/bash/markdown/sql/vue/svelte/json | — | paridad | paridad | paridad | — | — |
 
-  **R6 (formato)** es criterio nuevo (2026-10-17): solo astro tiene
-  evidencia parcial (format-on-save con conform+prettier-plugin-astro,
-  001 E); los **comandos `:FormatProject`/`:FormatInit` aún sin
-  evidencia en vivo en ningún lenguaje** → verificación pendiente por
-  ficha. Fichas que ya declaran `format`: java (`google-java-format`),
-  python (`isort`+`black`), c, bash (módulo), node-ts
-  (`formatters/javascript.lua` = patrón de referencia).
+  **R6 (formato)** es criterio nuevo (2026-10-17): astro verificado en
+  vivo — formato en save (conform+prettier-plugin-astro, 001 E) y
+  **comandos `:FormatProject`/`:FormatInit`** (fixtures, 001 E);
+  **resto de lenguajes sin evidencia de comandos** → verificación
+  pendiente por ficha. Fichas que ya declaran `format`: java
+  (`google-java-format`), python (`isort`+`black`), c, bash (módulo),
+  node-ts (`formatters/javascript.lua` = patrón de referencia).
 - **Sin duplicates**: antes de agregar un linter/server, verificar que no
   duplica diagnósticos ya cubiertos por otro componente.
 - **Configs locales primero**: si el proyecto trae su config (prettierrc,
