@@ -4,7 +4,7 @@
 
 -- nvim-html-css re-parsea el buffer ENTERO en cada BufEnter y BufWritePre
 -- (abrir y guardar) con un parser superlineal: ~4 s en un HTML de 12k
--- líneas (medido; ver specs/tasks/003-rendimiento.md). Guard por tamaño:
+-- líneas (medido; ver specs/nvim/tasks/003-rendimiento.md). Guard por tamaño:
 -- en buffers grandes se omite su parse y queda sin completado de clases
 -- de ESTE plugin; el resto (html-css-lsp, buffers pequeños) intacto.
 -- shortcut: >2000 líneas o >512 KB sin fuentes de clases de html-css;

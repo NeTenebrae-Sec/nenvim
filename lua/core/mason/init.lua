@@ -1,7 +1,7 @@
 -- =========================================================
 -- Motor Mason: instalación de binarios declarados por fichas
 -- =========================================================
--- auto_update=false: sin checks de red en cada arranque (specs/tasks/003).
+-- auto_update=false: sin checks de red en cada arranque (specs/nvim/tasks/003).
 -- Updates manuales: :MasonToolsUpdate.
 -- La lista ensure_installed se colecta de los campos `tools` de las
 -- fichas de languages/ (schema 002), sin duplicados.

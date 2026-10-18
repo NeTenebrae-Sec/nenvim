@@ -15,5 +15,8 @@ target/
 *.tmp
 *.bak
 
-# Suite manual de pruebas (proyecto ejemplo por lenguaje — ver specs/GLOBAL.md §5)
+# Suite manual de pruebas (proyecto ejemplo por lenguaje — ver specs/nvim/GLOBAL.md §5)
 /tests/
+
+# Specs personales (repo neteumbra/specs clonado — no pertenece a este repo)
+/specs/

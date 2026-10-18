@@ -1,6 +1,6 @@
 -- =========================================================
 -- rpc.lua
--- Socket RPC con nombre fijo para nvim-mcp (specs/tasks/000).
+-- Socket RPC con nombre fijo para nvim-mcp (specs/nvim/tasks/000).
 -- Permite que el agente se conecte a ESTA instancia (la
 -- interactiva) sin ambigüedad con la instancia --embed que
 -- OpenCode lanza para su propio LSP.

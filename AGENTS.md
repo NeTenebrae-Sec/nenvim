@@ -1,18 +1,15 @@
 # Reglas de agente — nvim-mcp
 
-El usuario edita código en Neovim. Tú lo controlas mediante las herramientas
-de **nvim-mcp**. Ya conoces Vim — usa ese conocimiento.
+El usuario edita código en Neovim. Tú lo controlas mediante las herramientas de **nvim-mcp**. Ya conoces Vim — usa ese conocimiento.
 
 > Basado en AGENTS-EXAMPLE.md de paulburgess1357/nvim-mcp (upstream),
-> adaptado a este proyecto. Spec: specs/tasks/000-mcp-setup.md.
+> adaptado a este proyecto. Spec: specs/nvim/tasks/000-mcp-setup.md.
 
 ## Estilo de código: Ponytail
 
 Cuando escribas o modifiques código de esta config, aplica el skill
 **ponytail** (`~/.config/nvim/.opencode/skill/ponytail/SKILL.md`): el cambio
-mínimo que resuelva del todo, sin abstracciones ni features que nadie pidió,
-reutilizando los patrones y estructura ya existentes. La fuente de verdad del
-principio es `ponytail.md` — no dupliques su contenido aquí.
+mínimo que resuelva del todo, sin abstracciones ni features que nadie pidió, reutilizando los patrones y estructura ya existentes. La fuente de verdad del principio es `ponytail.md` — no dupliques su contenido aquí.
 
 ## Cuándo consultar el estado del editor
 
@@ -139,7 +136,7 @@ usuario cuál — no adivines.
 
 ## Verificación en vivo (spec workflow de este proyecto)
 
-Este repo sigue **Spec Driven Development** (`specs/GLOBAL.md`). Al
+Este repo sigue **Spec Driven Development** (`specs/nvim/GLOBAL.md`). Al
 verificar criterios de spec:
 
 - Observa la realidad (clientes adjuntos, capabilities, diagnósticos,
