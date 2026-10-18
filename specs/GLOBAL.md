@@ -60,7 +60,7 @@ con nota de qué faltó.
 
 ## 4. Estándares de código
 
-- **Requisitos mínimos por lenguaje (R1–R5)**: todo lenguaje que se
+- **Requisitos mínimos por lenguaje (R1–R6)**: todo lenguaje que se
   integre debe cumplir, verificado en vivo:
   - **R1** Live-server: `<leader>us` sirve el proyecto (detectar el dev
     server propio del framework; p. ej. `astro dev`, no `vite`).
@@ -74,6 +74,10 @@ con nota de qué faltó.
   - **R4** LSP asignado (diagnósticos, hover, gd, completion, rename).
   - **R5** CMP completion cross-file (imports→símbolos de otros archivos,
     `gd`/hover, fuente `path`).
+  - **R6** Formato: `format` declarado en la ficha **y comandos de
+    formato funcionando** para el lenguaje — `:FormatProject` /
+    `:FormatInit` con los `get_cli_args` del módulo (patrón de
+    referencia `formatters/javascript.lua`) + format-on-save (conform).
 - **Arquitectura por lenguaje (spec 002)**: **motores** en `lua/core/`
   (lsp, format, lint, dap, cmp, treesitter, mason) — infraestructura
   autónoma que solo lee datos; **fichas** en `lua/languages/<lengua>/` —
@@ -83,20 +87,36 @@ con nota de qué faltó.
   `specs/tasks/002-arquitectura.md`.
 - **Defensivo**: toda integración externa con `pcall` y retorno temprano si
   falta la dependencia (patrón usado en toda la config).
+- **Cobertura objetivo** (lista del usuario, 2026-10-17): HTML, CSS,
+  JavaScript, TypeScript, Tailwind, Astro, React, Svelte, NextJS,
+  NodeJS, Java, SpringBoot, Zsh, Bash, C, Python. Todas tienen ficha
+  hoy: `html-css` (HTML/CSS/Tailwind), `node-ts` (JS/TS/Node), `astro`
+  (001 🚧), `react` ✅, `nextjs` ✅, `java` (+ tooling Spring:
+  `JavaInit`/`JavaAddDependencies`), `svelte`, `bash` (**incluye
+  `zsh`**), `c`, `python`. Las fichas fuera de la lista (`json`,
+  `yaml`, `lua`, `markdown`, `sql`, `vue`) se mantienen igual.
 - **DoD por lenguaje (evidencia observada)** — ✅ = verificado en vivo;
   paridad = comportamiento idéntico al pre-refactor confirmado por
   tablas/módulos en la migración (spec 002 F2):
 
-  | Lenguaje | R1 live | R2 runner | R3 lint | R4 LSP | R5 CMP |
-  | --- | --- | --- | --- | --- | --- |
-  | astro | ✅ 001 | ✅ 001 | ✅ eslint | ✅ 002 F2 | ✅ 002 F4 |
-  | node-ts | ✅ 001 | paridad | ✅ oxlint | ✅ 002 F2 | ✅ 002 F4 |
-  | html-css | paridad | n/a (web) | ✅ markuplint/stylelint | ✅ 002 F2 | ✅ html_ids |
-  | java | — | paridad | n/a | ✅ jdtls (001–WIP) | — |
-  | react | ✅ vite (005) | ✅ 005 (menú vite) | ✅ oxlint (005) | ✅ vtsls (005) | ✅ 005 |
-  | nextjs | ✅ 006 (next dev) | ✅ 006 (menú next) | ✅ oxlint (006) | ✅ vtsls (006) | ✅ 006 |
-  | yaml | — | — | — | ✅ yamlls (007) | — |
-  | lua/python/c/bash/markdown/sql/vue/svelte/json | — | paridad | paridad | paridad | — |
+  | Lenguaje | R1 live | R2 runner | R3 lint | R4 LSP | R5 CMP | R6 format |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | astro | ✅ 001 | ✅ 001 | ✅ eslint | ✅ 002 F2 | ✅ 002 F4 | parcial (001 E) |
+  | node-ts | ✅ 001 | paridad | ✅ oxlint | ✅ 002 F2 | ✅ 002 F4 | — |
+  | html-css | paridad | n/a (web) | ✅ markuplint/stylelint | ✅ 002 F2 | ✅ html_ids | — |
+  | java | — | paridad | n/a | ✅ jdtls (001–WIP) | — | — |
+  | react | ✅ vite (005) | ✅ 005 (menú vite) | ✅ oxlint (005) | ✅ vtsls (005) | ✅ 005 | — |
+  | nextjs | ✅ 006 (next dev) | ✅ 006 (menú next) | ✅ oxlint (006) | ✅ vtsls (006) | ✅ 006 | — |
+  | yaml | — | — | — | ✅ yamlls (007) | — | — |
+  | lua/python/c/bash/markdown/sql/vue/svelte/json | — | paridad | paridad | paridad | — | — |
+
+  **R6 (formato)** es criterio nuevo (2026-10-17): solo astro tiene
+  evidencia parcial (format-on-save con conform+prettier-plugin-astro,
+  001 E); los **comandos `:FormatProject`/`:FormatInit` aún sin
+  evidencia en vivo en ningún lenguaje** → verificación pendiente por
+  ficha. Fichas que ya declaran `format`: java (`google-java-format`),
+  python (`isort`+`black`), c, bash (módulo), node-ts
+  (`formatters/javascript.lua` = patrón de referencia).
 - **Sin duplicates**: antes de agregar un linter/server, verificar que no
   duplica diagnósticos ya cubiertos por otro componente.
 - **Configs locales primero**: si el proyecto trae su config (prettierrc,
