@@ -137,6 +137,12 @@ con nota de qué faltó.
   instancia `--embed` que OpenCode lanza para su propio LSP).
 - El agente **no** debe escribir en discos archivos abiertos en buffers del
   usuario (usar herramientas de buffer del MCP → undo inmediato).
+- **Suite manual**: `tests/astro-min/` (local, en `gitignore`) es el
+  proyecto Astro mínimo con piezas conectadas para pruebas a mano —
+  LSP/CMP/lint/formato/`:FormatInit`/`:FormatProject`/`:AstroInit` y MCP,
+  con su checklist en el README. Convención: el agente lo crea o
+  actualiza al cerrar la ficha de cada lenguaje; el agente verifica con
+  probes y el usuario en su nvim.
 
 ## 6. Roadmap de tareas
 

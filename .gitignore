@@ -14,3 +14,6 @@ target/
 .vscode/
 *.tmp
 *.bak
+
+# Suite manual de pruebas (proyecto ejemplo por lenguaje — ver specs/GLOBAL.md §5)
+/tests/
