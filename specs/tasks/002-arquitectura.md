@@ -173,6 +173,15 @@ API pública de cada motor: `setup()` + `register(datos)`.
       `eslint_spawns=1 → 0` (omitido); neteumbra →
       `eslint_resolved=node_modules/.bin/eslint exec=1`,
       `error_notifies=0`, `eslint_spawns=1` (sigue lintiendolo).)*
+- [x] R0 en LSP: config de servidor sin binario no ensucia lsp.log.
+      *(Evidencia: `springboot` (`languages/java/springboot.lua`,
+      migrado en F1/F2) nombraba `vscode-spring-boot-language-server`,
+      binario inexistente — el paquete Mason trae un JAR (`spring-boot-
+      language-server-…-exec.jar`) —; probe abrir un yaml →
+      `invalid "springboot" config` +1 en lsp.log; tras el guard de
+      `executable`, delta=0 y `yamlls` sigue adjunto normal. Para
+      activarlo de verdad: cmd `java -jar …/*-exec.jar`, anotado en el
+      archivo.)*
 
 ## Plan de verificación
 
