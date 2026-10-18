@@ -42,13 +42,23 @@ function M.setup()
     end
   end
 
+  -- Guard 003: prettier en buffers ≥1 MB se pasa de timeout_ms y el
+  -- guardado se bloquea ~5,1 s (HTML 12k medido). Con el guard no se
+  -- formatea al guardar en buffers grandes; el formato manual
+  -- (:FormatProject / format a mano) sigue disponible.
   conform.setup({
     formatters_by_ft = combined_by_ft,
     formatters = combined_defs,
-    format_on_save = {
-      timeout_ms = 5000,
-      lsp_format = "fallback",
-    },
+    format_on_save = function(bufnr)
+      local lines = vim.api.nvim_buf_line_count(bufnr)
+      if vim.api.nvim_buf_get_offset(bufnr, lines) >= 1024 * 1024 then
+        return nil
+      end
+      return {
+        timeout_ms = 5000,
+        lsp_format = "fallback",
+      }
+    end,
   })
 
   -- Comandos de usuario (:FormatProject y :FormatInit)

@@ -71,6 +71,8 @@ antes y después con la misma metodología.
   En archivos normales (≤ 7k líneas) prettier termina en 248–511 ms. Si
   molesta, opciones: subir el timeout, sacar prettier del format-on-save
   en HTML > umbral, o formatear selección. Decisión del usuario; no se tocó.
+  — **Resuelto 2026-10-17**: decisión = guard por tamaño (≥1 MB sin
+  format-on-save; ver criterio de guardado arriba/abajo).
 - **treesitter parse frío** de HTML 12k: 369–546 ms (inherente al parser;
   el highlight es incremental y no bloquea la interacción).
 - **markuplint huérfano**: si nvim muere sin apagar el cliente (p. ej.
@@ -90,6 +92,9 @@ antes y después con la misma metodología.
       en `$HOME`, glob 0 ms (antes 7.057 ms)._
 - [x] Sin regresión de config (carga ~410–425 ms, antes 363–483 ms) —
       _evidencia: sintaxis OK ×3 y métricas de carga en rango._
-- [~] Guardado HTML 12k rápido — _prettier supera su timeout (~5,1 s);
-      en archivos normales sí es rápido. Documentado arriba, pendiente de
-      decisión del usuario._
+- [x] Guardado HTML 12k rápido — _decisión: guard por tamaño (buffers
+      ≥1 MB no se formatean al guardar; formato manual intacto). Evidencia:
+      fixture 12.502 líneas / 2.341.748 B → `:write` **5.166 ms antes →
+      78 ms después**; HTML pequeño (<1 MB) sigue formateándose por
+      prettier vía mason (`<div    class="a"   >` → `<div class="a">`,
+      write 702 ms)._
