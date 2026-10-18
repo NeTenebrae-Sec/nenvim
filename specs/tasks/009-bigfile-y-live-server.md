@@ -97,6 +97,15 @@ de 3000 el comportamiento es idéntico al anterior (≤~140 ms de walk).
       post-guard `5k→parse_ms=9`, `25k→62`, `50k→150` (antes
       1113/23499/91067) y `2k líneas rb_attached=true` con
       edit_ms=499 (walk ≤~140 ms, igual que siempre)._
+- [x] `<leader>us` notifica al instante y la de URL sin retraso —
+      _evidencia: probe de timestamps (hook sobre `vim.notify` +
+      `xdg-open` falso de 8 s): post-fix `key→1ª notify=2 ms`
+      ("Web: iniciando astro (demo)..."), `url→sirviendo=0 ms`,
+      `stop→detenido=9 ms` y tabla limpia; pre-fix la primera
+      notificación del servidor salía al parsear la URL
+      (`key→url=1652–4921 ms` de boot, sin feedback). Causa real
+      descartada con medida: `system("xdg-open … &")=10 ms` no
+      bloquea — era solo el boot del dev server._
 
 ## Riesgos y notas
 

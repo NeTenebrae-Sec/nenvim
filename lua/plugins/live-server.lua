@@ -141,6 +141,10 @@ local function start_server(project_root)
   local is_next = not is_astro and vim.fn.filereadable(next_bin) == 1
   local framework = is_astro and "astro" or (is_next and "next" or "vite")
 
+  -- Aviso inmediato al pulsar: el dev server tarda ~5-10s en anunciar su
+  -- URL; la notificación con la URL llega al parsearla (mismo sistema)
+  vim.notify("Web: iniciando " .. framework .. " (" .. vim.fn.fnamemodify(project_root, ":t") .. ")...", vim.log.levels.INFO)
+
   -- Astro 7: sin root posicional (es el subcommand stop/status/logs) → cwd = root;
   -- sin --port: respeta su puerto por defecto/config (4321 en neteumbra).
   -- El puerto real se extrae del output, nunca del estimado.
