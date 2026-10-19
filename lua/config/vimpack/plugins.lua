@@ -28,11 +28,6 @@ return {
 
     -- LSP / Tools Core
     { url = "https://github.com/hrsh7th/cmp-nvim-lsp", dest = "start/cmp-nvim-lsp" },
-    { url = "https://github.com/williamboman/mason.nvim", dest = "start/mason.nvim" },
-    {
-      url = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim",
-      dest = "start/mason-tool-installer.nvim",
-    },
     { url = "https://github.com/stevearc/conform.nvim", dest = "start/conform.nvim" },
     { url = "https://github.com/mfussenegger/nvim-lint", dest = "start/nvim-lint" },
     { url = "https://github.com/folke/lazydev.nvim", dest = "start/lazydev.nvim" },

@@ -382,7 +382,7 @@ function M.run()
   end
 end
 
-function M.setup(_, mason_path)
+function M.setup(_, tools_path)
   local ok_jdtls_dap, jdtls_dap = pcall(require, "jdtls.dap")
   if ok_jdtls_dap then
     pcall(jdtls_dap.setup_dap, { hotcodereplace = "auto", config_overrides = {} })

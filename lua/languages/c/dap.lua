@@ -67,8 +67,8 @@ function M.run()
   end
 end
 
-function M.setup(dap, mason_path)
-  local codelldb_adapter = mason_path .. "/packages/codelldb/extension/adapter/codelldb"
+function M.setup(dap, tools_path)
+  local codelldb_adapter = tools_path .. "/packages/codelldb/extension/adapter/codelldb"
 
   dap.adapters.codelldb = {
     type = "executable",

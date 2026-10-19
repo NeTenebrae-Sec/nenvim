@@ -22,9 +22,9 @@ local function get_capabilities()
   return caps
 end
 
---- Ruta absoluta al binario de Mason
-local function mason_bin(name)
-  local p = vim.fn.stdpath("data") .. "/mason/bin/" .. name
+--- Ruta absoluta al binario del tools engine propio
+local function tools_bin(name)
+  local p = vim.fn.stdpath("data") .. "/tools/bin/" .. name
   return vim.uv.fs_stat(p) and p or name
 end
 
@@ -94,7 +94,7 @@ local function start_for_buffer(bufnr)
     if not client_attached(bufnr, "postgres_lsp") then
       vim.lsp.start({
         name = "postgres_lsp",
-        cmd = { mason_bin("postgres-language-server"), "lsp-proxy" },
+        cmd = { tools_bin("postgres-language-server"), "lsp-proxy" },
         root_dir = root,
         capabilities = caps,
         buffer = bufnr,
@@ -111,7 +111,7 @@ local function start_for_buffer(bufnr)
     if not client_attached(bufnr, "sqlls") then
       vim.lsp.start({
         name = "sqlls",
-        cmd = { mason_bin("sql-language-server"), "up", "--method", "stdio" },
+        cmd = { tools_bin("sql-language-server"), "up", "--method", "stdio" },
         root_dir = root,
         capabilities = caps,
         buffer = bufnr,
@@ -314,13 +314,13 @@ end, {
 -- CONFIGURACION ESTATICA para :checkhealth
 -- ============================================================================
 vim.lsp.config("postgres_lsp", {
-  cmd = { mason_bin("postgres-language-server"), "lsp-proxy" },
+  cmd = { tools_bin("postgres-language-server"), "lsp-proxy" },
   filetypes = { "sql" },
   root_markers = { "postgres-language-server.jsonc", ".git" },
 })
 
 vim.lsp.config("sqlls", {
-  cmd = { mason_bin("sql-language-server"), "up", "--method", "stdio" },
+  cmd = { tools_bin("sql-language-server"), "up", "--method", "stdio" },
   filetypes = { "mysql" },
   root_markers = { ".sqllsrc.json", ".git" },
 })

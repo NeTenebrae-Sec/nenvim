@@ -1,24 +1,29 @@
 -- =========================================================
 -- :checkhealth nete — estado de nenvim por lenguaje
 -- =========================================================
--- Tabla por ficha: binarios (PATH/mason), parsers treesitter y
+-- Tabla por ficha: binarios (PATH/tools), parsers treesitter y
 -- servers LSP. Defensivo (R0): todo con pcall; sin plugins la
 -- respuesta es "ausente", nunca un error.
 
 local M = {}
 
---- Estado de un tool: "path" | "mason-bin" | "mason-pkg" | nil
+--- Estado de un tool: "path" | "tools-bin" | "tools-pkg" | nil
 local function tool_state(tool)
   if vim.fn.executable(tool) == 1 then
     return "path"
   end
-  local mason = vim.fn.stdpath("data") .. "/mason/"
-  if vim.uv.fs_stat(mason .. "bin/" .. tool) then
-    return "mason-bin"
+  local tools = vim.fn.stdpath("data") .. "/tools/"
+  local ok_reg, registry = pcall(require, "core.tools.registry")
+  local recipe = ok_reg and registry.recipes[tool] or nil
+  -- Exposed bins are the names the config actually resolves
+  for _, bin in ipairs(recipe and recipe.bins or { tool }) do
+    if vim.fn.executable(tools .. "bin/" .. bin) == 1 then
+      return "tools-bin"
+    end
   end
-  -- Paquete mason instalado cuyo binario principal tiene otro nombre
-  if vim.uv.fs_stat(mason .. "packages/" .. tool) then
-    return "mason-pkg"
+  -- Package installed but no exposed bin (jar-only tools)
+  if vim.uv.fs_stat(tools .. "packages/" .. tool) then
+    return "tools-pkg"
   end
   return nil
 end
@@ -95,7 +100,7 @@ function M.check()
       vim.health.ok(ficha.name .. ": completo")
     else
       vim.health.warn(ficha.name .. ": " .. table.concat(problems, " | "), {
-        "binarios: :MasonToolsUpdate · parsers: :TSUpdate",
+        "binarios: :ToolsInstall <lang> · parsers: :TSUpdate",
       })
     end
   end

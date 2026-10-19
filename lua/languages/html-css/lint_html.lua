@@ -1,6 +1,6 @@
 local lint = require("lint")
 
-local mason_bin = vim.fn.stdpath("data") .. "/mason/bin/markuplint"
+local tools_bin = vim.fn.stdpath("data") .. "/tools/bin/markuplint"
 local tmp_config = vim.fn.stdpath("state") .. "/markuplintrc_fallback.json"
 
 -- Si no existe, creamos una configuración con REGLAS VÁLIDAS de Markuplint
@@ -36,7 +36,7 @@ local markuplint_configs = {
   "markuplint.config.cjs",
 }
 
-lint.linters.markuplint.cmd = mason_bin
+lint.linters.markuplint.cmd = tools_bin
 
 lint.linters.markuplint.args = {
   "--format",

@@ -20,7 +20,7 @@ local M = {
           typescript = {
             -- typescript-language-server solo se lista por el tsdk que astro-ls lee
             tsdk = vim.fn.stdpath("data")
-              .. "/mason/packages/typescript-language-server/node_modules/typescript/lib",
+              .. "/tools/packages/typescript-language-server/node_modules/typescript/lib",
           },
         },
       },

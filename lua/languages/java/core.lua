@@ -71,9 +71,9 @@ function M.setup()
     logger.debug("Binario JDTLS:", jdtls_java_bin)
     logger.debug("Binario Proyecto/DAP:", project_java_bin)
 
-    -- Configurar Rutas y Jars de Mason
-    local mason_path = home .. "/.local/share/nvim/mason/packages"
-    local jdtls_path = mason_path .. "/jdtls"
+    -- Rutas de los paquetes del tools engine propio
+    local tools_path = vim.fn.stdpath("data") .. "/tools/packages"
+    local jdtls_path = tools_path .. "/jdtls"
     local path_to_config = jdtls_path .. "/config_linux"
 
     local launcher_jars = vim.fn.glob(jdtls_path .. "/plugins/org.eclipse.equinox.launcher_*.jar", false, true)
@@ -85,7 +85,7 @@ function M.setup()
     -- Bundles para Debugging
     local bundles = {}
     local debug_jars = vim.fn.glob(
-      mason_path .. "/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar",
+      tools_path .. "/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar",
       false,
       true
     )

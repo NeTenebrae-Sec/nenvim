@@ -39,7 +39,7 @@ M.modules = {
 
   -- Entorno LSP: motores + fichas de languages/ (schema 002)
   "plugins.otter",
-  "core.mason",
+  "core.tools",
   "core.lsp",
   "core.lint",
   "core.format",

@@ -15,8 +15,8 @@ function M.run()
   vim.fn.jobstart({ "/usr/bin/kitty", "-e", "bash", "-c", cmd }, { detach = true })
 end
 
-function M.setup(dap, mason_path)
-  local js_debug_path = mason_path .. "/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
+function M.setup(dap, tools_path)
+  local js_debug_path = tools_path .. "/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
 
   dap.adapters["pwa-node"] = {
     type = "server",

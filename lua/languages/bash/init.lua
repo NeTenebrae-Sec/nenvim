@@ -2,7 +2,7 @@
 -- Ficha Bash/Shell — shfmt + bash-debug-adapter
 -- =========================================================
 -- Sin LSP (paridad con la config anterior: bash-language-server
--- estaba en mason pero nunca cableado).
+-- existía instalado pero nunca estuvo cableado).
 
 local M = {
   name = "bash",

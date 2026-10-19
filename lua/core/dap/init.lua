@@ -4,7 +4,7 @@
 -- Posee: keymap <leader>dr, fallback Kitty, ui (signs/dapui/listeners)
 -- y el wiring de adapters/configurations por filetype.
 -- Las fichas de languages/ aportan `dap` = { run, setup }
--- (schema 002); el motor llama setup(dap, mason_path) de cada una
+-- (schema 002); el motor llama setup(dap, tools_path) de cada una
 -- y el runner resuelve run() por filetype.
 
 local ok_dap, dap_lib = pcall(require, "dap")
@@ -32,13 +32,13 @@ dap_lib.defaults.fallback.external_terminal = {
 require("core.dap.ui")
 
 -- Registro de configurations/adapters desde las fichas (schema 002)
-local mason_path = vim.fn.stdpath("data") .. "/mason"
+local tools_path = vim.fn.stdpath("data") .. "/tools"
 
 local ok_langs, languages = pcall(require, "languages")
 if ok_langs then
   for _, ficha in ipairs(languages.all()) do
     if ficha.dap and type(ficha.dap.setup) == "function" then
-      local ok_setup, err = pcall(ficha.dap.setup, dap_lib, mason_path)
+      local ok_setup, err = pcall(ficha.dap.setup, dap_lib, tools_path)
       if not ok_setup then
         vim.notify("DAP setup falló (" .. (ficha.name or "?") .. "): " .. tostring(err), vim.log.levels.WARN)
       end

@@ -19,13 +19,13 @@ function M.run()
   vim.fn.jobstart({ "/usr/bin/kitty", "-e", "bash", "-c", cmd }, { detach = true })
 end
 
-function M.setup(dap, mason_path)
-  local bashdb_dir = mason_path .. "/packages/bash-debug-adapter/extension/bashdb_dir"
+function M.setup(dap, tools_path)
+  local bashdb_dir = tools_path .. "/packages/bash-debug-adapter/extension/bashdb_dir"
   local bashdb_path = bashdb_dir .. "/bashdb"
 
   dap.adapters.bash = {
     type = "executable",
-    command = mason_path .. "/packages/bash-debug-adapter/bash-debug-adapter",
+    command = tools_path .. "/packages/bash-debug-adapter/bash-debug-adapter",
     name = "bashdb",
   }
 
