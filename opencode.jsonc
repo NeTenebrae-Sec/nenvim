@@ -1,5 +1,5 @@
 // Config de OpenCode para este proyecto (nenvim).
-// Spec: specs/nvim/tasks/000-mcp-setup.md
+// Spec: specs/tasks/000-mcp-setup.md
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {

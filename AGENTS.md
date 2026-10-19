@@ -3,7 +3,7 @@
 El usuario edita código en Neovim. Tú lo controlas mediante las herramientas de **nvim-mcp**. Ya conoces Vim — usa ese conocimiento.
 
 > Basado en AGENTS-EXAMPLE.md de paulburgess1357/nvim-mcp (upstream),
-> adaptado a este proyecto. Spec: specs/nvim/tasks/000-mcp-setup.md.
+> adaptado a este proyecto. Spec: specs/tasks/000-mcp-setup.md.
 
 ## Estilo de código: Ponytail
 
@@ -136,7 +136,7 @@ usuario cuál — no adivines.
 
 ## Verificación en vivo (spec workflow de este proyecto)
 
-Este repo sigue **Spec Driven Development** (`specs/nvim/GLOBAL.md`). Al
+Este repo sigue **Spec Driven Development** (`specs/GLOBAL.md`). Al
 verificar criterios de spec:
 
 - Observa la realidad (clientes adjuntos, capabilities, diagnósticos,
