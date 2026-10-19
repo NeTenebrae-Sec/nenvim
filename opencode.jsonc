@@ -2,6 +2,10 @@
 // Spec: specs/tasks/000-mcp-setup.md
 {
   "$schema": "https://opencode.ai/config.json",
+  // AGENTS.md vive en las specs (repo neteumbra/specs) — no en la raíz, que
+  // es solo código. Sin esta entrada OpenCode no lo descubre y las reglas de
+  // nvim-mcp dejan de aplicarse (silenciosamente, si falta el symlink).
+  "instructions": ["specs/AGENTS.md"],
   "mcp": {
     "servers": {
       // --offline: uv usa su caché local (nvim-mcp 1.1.1) — el server MCP
