@@ -1,25 +1,33 @@
 # nenvim
 
-![Dashboard](https://raw.githubusercontent.com/NeTenebraes/nenvim/refs/heads/main/docs/images/Dashboard.webp)
+<div align="center">
 
-nenvim is a personal Neovim configuration, designed to be modular, efficient, and maintainable. It focuses on a clean development workflow with curated plugins for modern coding tasks.
+![Neovim](https://img.shields.io/badge/Neovim-007396?style=for-the-badge&logo=neovim&logoColor=white)
+![Lua](https://img.shields.io/badge/Lua-1F2937?style=for-the-badge&logo=lua&logoColor=white)
+![Linux](https://img.shields.io/badge/Supports-Linux-1F2937?style=for-the-badge&logo=linux&logoColor=white)
 
-## Features
+![Dashboard](https://raw.githubusercontent.com/NeTenebrae-Sec/nenvim/main/docs/images/Dashboard.webp)
 
-- **Modular Architecture:** Organized directory structure separating configuration, plugins, LSP settings, and UI components.
-- **LSP & Tooling:** Pre-configured support for Language Servers, linting, and formatting via Mason.
-- **UI Enhancements:** Carefully selected aesthetic and functional plugins to improve visibility and interaction.
-- **Productivity:** Optimized keymaps and tools for faster navigation and editing.
+</div>
 
-## Structure
+Configuración personal de Neovim, diseñada para ser modular, eficiente y mantenible. Se enfoca en un flujo de desarrollo limpio con plugins seleccionados para tareas de programación modernas.
 
-The configuration is structured as follows:
+## Características
 
-- config/ # Core settings: keymaps, options, and plugin loading
-- plugins/ # Plugins separated by functionality (CMP, LSP, UI)
-- theme00/01.lua # Theme configurations
+- **Arquitectura Modular:** Estructura de directorios que separa configuración, plugins, LSP y componentes de UI.
+- **LSP & Tooling:** Soporte pre-configurado para Language Servers, linting y formateo vía Mason.
+- **UI Mejorada:** Plugins estéticos y funcionales seleccionados para mejorar la visibilidad e interacción.
+- **Productividad:** Keymaps y herramientas optimizados para una navegación y edición más rápidas.
 
-## Installation
+## Instalación
 
-1. Ensure you have Neovim 0.12 or higher installed.
-2. Clone this repository into your Neovim configuration directory (make a backup)
+1. Asegúrate de tener Neovim 0.12 o superior instalado.
+2. Clona este repositorio en tu directorio de configuración de Neovim (haz una copia de seguridad previa):
+
+```bash
+git clone https://github.com/NeTenebrae-Sec/nenvim.git ~/.config/nvim
+```
+
+## Licencia
+
+Configuración personal de uso propio.
