@@ -1,0 +1,44 @@
+{
+  "Componente Astro": {
+    "prefix": "afcomp",
+    "body": ["---", "\t$1", "---", "", "<div>", "\t$0", "</div>"],
+    "description": "Componente Astro mínimo (frontmatter + template)"
+  },
+  "Layout Astro": {
+    "prefix": "aflayout",
+    "body": [
+      "---",
+      "interface Props {",
+      "\ttitle: string;",
+      "}",
+      "const { title } = Astro.props;",
+      "---",
+      "",
+      "<!doctype html>",
+      "<html lang=\"es\">",
+      "\t<head>",
+      "\t\t<meta charset=\"utf-8\" />",
+      "\t\t<meta name=\"viewport\" content=\"width=device-width, initial=scale\" />",
+      "\t\t<title>{title}</title>",
+      "\t</head>",
+      "\t<body>",
+      "\t\t<slot />",
+      "\t</body>",
+      "</html>"
+    ],
+    "description": "Layout Astro con Props y slot"
+  },
+  "Página Astro": {
+    "prefix": "afpage",
+    "body": [
+      "---",
+      "import Layout from '../layouts/BaseLayout.astro';",
+      "---",
+      "",
+      "<Layout title=\"$1\">",
+      "\t$0",
+      "</Layout>"
+    ],
+    "description": "Página Astro dentro de un Layout"
+  }
+}

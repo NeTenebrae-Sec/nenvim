@@ -1,0 +1,7 @@
+// @PUT https://jsonplaceholder.typicode.com/posts/1
+{
+  "id": 1,
+  "title": "Post actualizado",
+  "body": "Contenido nuevo",
+  "userId": 1
+}

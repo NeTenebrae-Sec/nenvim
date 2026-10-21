@@ -2,12 +2,11 @@
 -- lua/plugins/snacks.lua
 -- Configuración modular, rápida y optimizada de snacks.nvim
 -- =========================================================
-Snacks = require("snacks")
-
 local status, snacks = pcall(require, "snacks")
 if not status then
-	return
+  return
 end
+Snacks = snacks
 
 -----------------------------------------------------------
 -- OPCIONES DE HEADER / ASCII ART PARA EL DASHBOARD
@@ -46,233 +45,282 @@ local header_2 = [[⠀⠀⠀⠀
 local opcion_header = 1
 
 local headers = {
-	[1] = header_1,
-	[2] = header_2,
+  [1] = header_1,
+  [2] = header_2,
 }
 
 snacks.setup({
-	bigfile = { enabled = true },
-	quickfile = { enabled = true },
-	toggle = { enabled = true },
+  -- Umbral alto: archivos ≤5 MB con líneas normales trabajan con todo
+  -- (LSP/lint/treesitter); la red de seguridad nativa (ft "bigfile")
+  -- solo actúa sobre >5 MB o minificados extremos (línea media >4000)
+  bigfile = {
+    enabled = true,
+    size = 5 * 1024 * 1024,
+    line_length = 4000,
+  },
+  quickfile = { enabled = true },
+  toggle = { enabled = true },
 
-	image = {
-		enabled = true,
-		doc = {
-			inline = false, -- Usamos solo ventana flotante
-			float = true,
-			max_width = 40, -- Ajustamos a un tamaño más pequeño y elegante
-			max_height = 20,
-		},
-		env = {
-			SNACKS_KITTY = true, -- Forzar renderizado consistente en tu terminal Kitty
-		},
-	},
+  image = {
+    enabled = true,
+    doc = {
+      inline = false, -- Usamos solo ventana flotante
+      float = true,
+      max_width = 40, -- Ajustamos a un tamaño más pequeño y elegante
+      max_height = 20,
+    },
+    env = {
+      SNACKS_KITTY = true, -- Forzar renderizado consistente en tu terminal Kitty
+    },
+  },
 
-	styles = {
-		snacks_image = {
-			relative = "cursor", -- Sigue la posición de tu cursor
-			anchor = "NW", -- Anclamos la esquina superior izquierda (North-West) de la imagen
-			row = 0, -- Alineado exactamente con la misma altura de tu cursor
-			col = 50, -- Desplazado 4 caracteres a la derecha para no tapar lo que escribes
-			border = "rounded",
-			focusable = false, -- No roba el foco del teclado al aparecer
-			zindex = 50, -- Se dibuja siempre por encima de cualquier otro panel
-		},
-	},
+  styles = {
+    snacks_image = {
+      relative = "cursor", -- Sigue la posición de tu cursor
+      anchor = "NW", -- Anclamos la esquina superior izquierda (North-West) de la imagen
+      row = 0, -- Alineado exactamente con la misma altura de tu cursor
+      col = 50, -- Desplazado 4 caracteres a la derecha para no tapar lo que escribes
+      border = "rounded",
+      focusable = false, -- No roba el foco del teclado al aparecer
+      zindex = 50, -- Se dibuja siempre por encima de cualquier otro panel
+    },
+  },
 
-	-- ⌨️ INTERFAZ DE ENTRADA Y NOTIFICACIONES
-	input = { enabled = true },
-	notifier = {
-		enabled = true,
-		timeout = 3000,
-		style = "fancy",
-	},
+  -- ⌨️ INTERFAZ DE ENTRADA Y NOTIFICACIONES
+  input = { enabled = true },
+  notifier = {
+    enabled = true,
+    timeout = 3000,
+    style = "fancy",
+  },
 
-	-- 󰠚 ANIMACIONES (Scroll y Aturdimiento/Dim)
-	scroll = { enabled = true },
+  -- 󰠚 ANIMACIONES (Scroll y Aturdimiento/Dim)
+  scroll = { enabled = true },
 
-	dim = {
-		enabled = true,
-		scope = {
-			min_size = 5,
-			max_size = 20,
-			siblings = true,
-		},
-		animate = { enabled = true },
-	},
+  dim = {
+    enabled = true,
+    scope = {
+      min_size = 5,
+      max_size = 20,
+      siblings = true,
+    },
+    animate = { enabled = true },
+  },
 
-	--  GUÍAS VISUALES (Indentación y Áreas de Código)
-	indent = { enabled = true },
+  --  GUÍAS VISUALES (Indentación y Áreas de Código)
+  indent = { enabled = true },
 
-	scope = {
-		enabled = true,
-		cursor = true,
-		edge = true,
-		min_size = 2,
-		max_size = 20,
-		treesitter = {
-			enabled = true,
-			injections = true,
-			blocks = {
-				enabled = true,
-				"function_declaration",
-				"function_definition",
-				"method_declaration",
-				"method_definition",
-			},
-		},
-	},
+  scope = {
+    enabled = true,
+    cursor = true,
+    edge = true,
+    min_size = 2,
+    max_size = 20,
+    treesitter = {
+      enabled = true,
+      injections = true,
+      blocks = {
+        enabled = true,
+        "function_declaration",
+        "function_definition",
+        "method_declaration",
+        "method_definition",
+      },
+    },
+  },
 
-	-- 🔤 RESALTADO DE PALABRAS REPETIDAS
-	words = {
-		enabled = true,
-		debounce = 300, -- Tiempo de espera sensato
-		notify_jump = false,
-		-- Forzamos a que solo actúe en modo Normal, nunca editando
-		modes = { "n" },
-	},
+  -- 🔤 RESALTADO DE PALABRAS REPETIDAS
+  words = {
+    enabled = true,
+    debounce = 300, -- Tiempo de espera sensato
+    notify_jump = false,
+    -- Forzamos a que solo actúe en modo Normal, nunca editando
+    modes = { "n" },
+  },
 
-	-- 📝 BLOC DE NOTAS RÁPIDAS (Scratchpads)
-	scratch = {
-		enabled = true,
-		name = "notes",
-		ft = "markdown",
-		root = vim.fn.stdpath("data") .. "/scratch",
-		autowrite = true,
-		filekey = {
-			cwd = true,
-			branch = false,
-			count = true,
-		},
-		win = { style = "scratch" },
-	},
+  -- 📝 BLOC DE NOTAS RÁPIDAS (Scratchpads)
+  scratch = {
+    enabled = true,
+    name = "notes",
+    ft = "markdown",
+    root = vim.fn.stdpath("data") .. "/scratch",
+    autowrite = true,
+    filekey = {
+      cwd = true,
+      branch = false,
+      count = true,
+    },
+    win = { style = "scratch" },
+  },
 
-	-- 🔍 BUSCADOR (Picker) Y EXPLORADOR DE ARCHIVOS
-	picker = {
-		enabled = true,
-		win = {
-			input = {
-				keys = {
-					["<c-p>"] = { "toggle_preview", mode = { "n", "i" } },
-				},
-			},
-		},
-		sources = {
-			explorer = {
-				win = {
-					wo = {
-						modifiable = true,
-						readonly = false,
-					},
-				},
-			},
-		},
-	},
+  -- 🔍 BUSCADOR (Picker) Y EXPLORADOR DE ARCHIVOS
+  picker = {
+    enabled = true,
+    win = {
+      input = {
+        keys = {
+          ["<c-p>"] = { "toggle_preview", mode = { "n", "i" } },
+        },
+      },
+    },
+    sources = {
+      explorer = {
+        win = {
+          wo = {
+            modifiable = true,
+            readonly = false,
+          },
+        },
+      },
+    },
+  },
 
-	explorer = {
-		enabled = true,
-		replace_netrw = true,
-		git_status = true,
-	},
+  explorer = {
+    enabled = true,
+    replace_netrw = true,
+    git_status = true,
+  },
 
-	-- 󰞷 TERMINAL FLOTANTE INTEGRADA
-	terminal = {
-		enabled = true,
-		win = {
-			style = "float",
-			border = "rounded",
-			keys = { ["<esc>"] = "hide" },
-			wo = {
-				statusline = "",
-				winbar = "",
-				number = false,
-				relativenumber = false,
-				signcolumn = "no",
-			},
-		},
-	},
+  -- 󰞷 TERMINAL FLOTANTE INTEGRADA
+  terminal = {
+    enabled = true,
+    win = {
+      style = "float",
+      border = "rounded",
+      keys = { ["<esc>"] = "hide" },
+      wo = {
+        statusline = "",
+        winbar = "",
+        number = false,
+        relativenumber = false,
+        signcolumn = "no",
+      },
+    },
+  },
 
-	-- ⢵ COLUMNA DE ESTADO NATIVA
-	statuscolumn = {
-		enabled = true,
-		left = { "mark", "sign" },
-		right = { "fold", "git" },
-	},
+  -- ⢵ COLUMNA DE ESTADO NATIVA
+  statuscolumn = {
+    enabled = true,
+    left = { "mark", "sign" },
+    right = { "fold", "git" },
+  },
 
-	--  INTEGRACIÓN DE LAZYGIT
-	lazygit = {
-		enabled = true,
-		config = {
-			ui = { border = "rounded" },
-		},
-		win = {
-			position = "float",
-			backdrop = 60,
-		},
-	},
+  --  INTEGRACIÓN DE LAZYGIT
+  lazygit = {
+    enabled = true,
+    config = {
+      ui = { border = "rounded" },
+    },
+    win = {
+      position = "float",
+      backdrop = 60,
+    },
+  },
 
-	-- 🧘 MODO ZEN
-	zen = {
-		enabled = true,
-		toggles = {
-			dim = false,
-			git_signs = false,
-			mini_diff_signs = false,
-			diagnostics = false,
-			inlay_hints = false,
-		},
-		show = {
-			statusline = false,
-			tabline = false,
-		},
-		win = {
-			style = "none",
-			backdrop = {
-				transparent = false,
-				blend = 85,
-			},
-			wo = {
-				number = true,
-				relativenumber = false,
-				signcolumn = "yes",
-				foldcolumn = "0",
-			},
-		},
-	},
+  -- 🧘 MODO ZEN
+  zen = {
+    enabled = true,
+    toggles = {
+      dim = false,
+      git_signs = false,
+      mini_diff_signs = false,
+      diagnostics = false,
+      inlay_hints = false,
+    },
+    show = {
+      statusline = false,
+      tabline = false,
+    },
+    win = {
+      style = "none",
+      backdrop = {
+        transparent = false,
+        blend = 85,
+      },
+      wo = {
+        number = true,
+        relativenumber = false,
+        signcolumn = "yes",
+        foldcolumn = "0",
+      },
+    },
+  },
 
-	-- 📊 PANTALLA DE INICIO (Dashboard)
-	dashboard = {
-		enabled = true,
-		init = function()
-			vim.opt.laststatus = 3
-		end,
-		sections = {
-			{ section = "header", padding = 1 },
-			{ section = "keys", gap = 1, padding = 1 },
-			{ icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
-		},
-		preset = {
-			header = headers[opcion_header],
-			keys = {
-				{
-					icon = " ",
-					key = "f",
-					desc = "Find File",
-					action = function()
-						Snacks.picker.files()
-					end,
-				},
-				{ icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
-				{
-					icon = " ",
-					key = "g",
-					desc = "Find Text",
-					action = function()
-						Snacks.picker.grep()
-					end,
-				},
-				{ icon = " ", key = "q", desc = "Quit", action = ":qa" },
-			},
-		},
-	},
+  -- 📊 PANTALLA DE INICIO (Dashboard)
+  dashboard = {
+    enabled = true,
+    init = function()
+      vim.opt.laststatus = 3
+    end,
+    sections = {
+      { section = "header", padding = 1 },
+      { section = "keys", gap = 1, padding = 1 },
+      { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+    },
+    preset = {
+      header = headers[opcion_header],
+      keys = {
+        {
+          icon = " ",
+          key = "f",
+          desc = "Find File",
+          action = function()
+            Snacks.picker.files()
+          end,
+        },
+        { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+        {
+          icon = " ",
+          key = "g",
+          desc = "Find Text",
+          action = function()
+            Snacks.picker.grep()
+          end,
+        },
+        { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+      },
+    },
+  },
 })
+
+-- =========================================================
+-- :Toggles — picker de toggles del editor (estilo sección multiple)
+-- =========================================================
+-- Lista los toggles registrados de snacks (instancia los built-in de
+-- rendimiento al abrir, idempotente por id) y alterna el elegido en
+-- bucle. La UI es vim.ui.select → picker de snacks (ui_select on).
+-- Sin LSP: esta versión de snacks no trae toggle de clientes.
+vim.api.nvim_create_user_command("Toggles", function()
+  local builtin_ids = {
+    "treesitter", "diagnostics", "inlay_hints", "indent", "dim",
+    "words", "scroll", "animate", "line_number",
+  }
+  for _, id in ipairs(builtin_ids) do
+    pcall(snacks.toggle.get, id)
+  end
+
+  local items = {}
+  for _, t in pairs(snacks.toggle.toggles) do
+    items[#items + 1] = t
+  end
+  table.sort(items, function(a, b)
+    return a.opts.name < b.opts.name
+  end)
+
+  vim.ui.select(items, {
+    prompt = "Toggles",
+    format_item = function(t)
+      local icon = t.opts.icon
+      if type(icon) == "table" then
+        icon = t:get() and icon.enabled or icon.disabled
+      end
+      return icon .. " " .. t.opts.name
+    end,
+  }, function(choice)
+    if not choice then
+      return
+    end
+    choice:toggle()
+    vim.cmd("Toggles") -- reabrir para seguir alternando
+  end)
+end, { desc = "Picker de toggles del editor" })

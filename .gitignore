@@ -1,4 +1,28 @@
+out/
 pack/
 .obsidian/
 lua/plugins/debug.log
 .vite/
+
+node_modules/
+*.log
+.env
+target/
+.gradle/
+.mvn/
+.idea/
+.vscode/
+*.tmp
+*.bak
+
+# Suite manual de pruebas (proyecto ejemplo por lenguaje — ver specs/05-workflow.md §2)
+/tests/
+
+# Config de IA / agentes — NO va en este repo (nvim-mcp y skills viven en
+# la config global de OpenCode: ~/.config/opencode/). Ver specs/05-workflow.md §2.
+/.opencode/
+opencode.jsonc
+
+# Specs personales (symlink a GitHub/specs/nvim — no pertenece a este repo)
+# Sin barra final: git trata un symlink como archivo, no como directorio.
+/specs
